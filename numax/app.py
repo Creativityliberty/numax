@@ -29,6 +29,13 @@ from numax.flows.profile_apply import build_profile_apply_flow
 from numax.flows.runtime_resilience import build_runtime_resilience_flow
 from numax.flows.recipe_run import build_recipe_run_flow
 from numax.flows.external_subagent_run import build_external_subagent_run_flow
+from numax.flows.learning_feedback import build_learning_feedback_flow
+from numax.learning.mode_feedback import load_mode_feedback
+from numax.learning.mode_stats import compute_mode_stats
+from numax.learning.mode_selector import select_best_mode
+from numax.jobs.retry_scheduler import schedule_retry
+from numax.packs.install import install_pack
+from numax.packs.registry import build_default_pack_registry
 from numax.health.startup_checks import run_startup_checks
 from numax.identity.runtime_identity import build_runtime_identity
 from numax.learning.critic_calibration import load_critic_policy
@@ -113,6 +120,9 @@ def run(
     elif flow == "external_subagent_run":
         graph = build_external_subagent_run_flow()
         start = "external_subagent"
+    elif flow == "learning_feedback_loop":
+        graph = build_learning_feedback_flow()
+        start = "learning_feedback"
     else:
         raise typer.BadParameter(f"Unsupported flow: {flow}")
 
@@ -629,6 +639,89 @@ def external_subagent_run_cmd(
             "next_recommended_action": final_state.next_recommended_action,
         }
     )
+
+
+@app.command("learning-stats")
+def learning_stats_cmd() -> None:
+    from numax.learning.mode_stats import ModeStatsAggregator, build_mock_history
+    # Mock history for now
+    aggregator = ModeStatsAggregator(history=build_mock_history())
+    typer.echo(aggregator.get_all_summaries())
+
+
+@app.command("learning-recommend")
+def learning_recommend_cmd(
+    task_type: str = typer.Option("general", help="Task type"),
+    candidates: str = typer.Option("repo_operator,research_mode", help="Comma-separated candidates"),
+) -> None:
+    from numax.learning.mode_selector import SmartModeSelector
+    from numax.learning.mode_stats import build_mock_history
+    
+    candidate_list = [c.strip() for c in candidates.split(",")]
+    selector = SmartModeSelector(history=build_mock_history())
+    recommendation = selector.recommend(task_type=task_type, candidates=candidate_list)
+    
+    typer.echo(recommendation)
+
+
+@app.command("learning-run")
+def learning_run_cmd(
+    recipe_id: str = typer.Option("workspace_audit", help="Recipe to run and learn from"),
+) -> None:
+    state = NumaxState(
+        observation={
+            "recipe_id": recipe_id,
+        }
+    )
+    state.runtime.run_id = str(uuid.uuid4())
+    state.active_recipe = recipe_id
+
+    graph = build_learning_feedback_flow()
+    final_state = graph.run(start="learning_feedback", state=state)
+
+    typer.echo(
+        {
+            "active_feedback": final_state.active_feedback,
+            "mode_recommendation": final_state.mode_recommendation,
+            "next_recommended_action": final_state.next_recommended_action,
+        }
+    )
+
+
+@app.command("mode-feedback-show")
+def mode_feedback_show() -> None:
+    typer.echo(load_mode_feedback())
+
+
+@app.command("mode-stats")
+def mode_stats_cmd(
+    group_by: str = typer.Option("profile", help="profile or recipe"),
+) -> None:
+    typer.echo(compute_mode_stats(group_by=group_by))
+
+
+@app.command("mode-select")
+def mode_select_cmd(
+    group_by: str = typer.Option("profile", help="profile or recipe"),
+    min_runs: int = typer.Option(1, help="Minimum number of runs"),
+) -> None:
+    typer.echo(select_best_mode(group_by=group_by, min_runs=min_runs))
+
+
+@app.command("packs-list")
+def packs_list() -> None:
+    registry = build_default_pack_registry()
+    typer.echo(registry.list_ids())
+
+
+@app.command("pack-install")
+def pack_install(pack_id: str = typer.Option(...)) -> None:
+    typer.echo(install_pack(pack_id))
+
+
+@app.command("retry-schedule")
+def retry_schedule(job_id: str = typer.Option("job-1"), retries: int = typer.Option(0)) -> None:
+    typer.echo(schedule_retry(job_id=job_id, retries=retries))
 
 
 if __name__ == "__main__":

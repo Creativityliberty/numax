@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import subprocess
-from pathlib import Path
-from typing import Any
+from typing import Any, Dict
 
+from numax.sandbox.container_runner import run_in_container
+from numax.sandbox.fs_policy import is_path_allowed
 from numax.sandbox.policy import ALLOWED_COMMANDS, BLOCKED_TOKENS
 from numax.sandbox.specs import SandboxCommand
 
@@ -12,7 +12,7 @@ class SandboxViolation(RuntimeError):
     pass
 
 
-def run_isolated_command(spec: SandboxCommand) -> dict[str, Any]:
+def run_isolated_command(spec: SandboxCommand) -> Dict[str, Any]:
     if not spec.command:
         raise SandboxViolation("Empty command")
 
@@ -25,22 +25,7 @@ def run_isolated_command(spec: SandboxCommand) -> dict[str, Any]:
             raise SandboxViolation(f"Blocked token: {token}")
 
     cwd = spec.cwd or "."
-    cwd_path = Path(cwd).resolve()
+    if not is_path_allowed(cwd, ["."]):
+        raise SandboxViolation(f"Path not allowed: {cwd}")
 
-    result = subprocess.run(
-        spec.command,
-        cwd=str(cwd_path),
-        capture_output=True,
-        text=True,
-        timeout=spec.timeout_seconds,
-        check=False,
-    )
-
-    return {
-        "ok": result.returncode == 0,
-        "returncode": result.returncode,
-        "stdout": result.stdout,
-        "stderr": result.stderr,
-        "command": spec.command,
-        "cwd": str(cwd_path),
-    }
+    return run_in_container(spec.command, cwd=cwd, timeout_seconds=spec.timeout_seconds)

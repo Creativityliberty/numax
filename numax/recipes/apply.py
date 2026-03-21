@@ -6,6 +6,7 @@ from typing import Any, Dict, List
 from numax.profiles.apply import apply_profile
 from numax.recipes.registry import build_default_recipe_registry
 from numax.skills.apply import apply_skill
+from numax.learning.mode_feedback import append_mode_feedback
 
 
 @dataclass
@@ -48,6 +49,21 @@ def apply_recipe(recipe_id: str, preview: bool = True) -> RecipeApplyResult:
         notes.append(f"Applied skill '{skill_id}': ok={skill_result.ok}")
 
     notes.append("Recipe applied and execution plan prepared.")
+
+    if not preview:
+        append_mode_feedback(
+            {
+                "profile": recipe.profile_id,
+                "recipe": recipe_id,
+                "success": True,
+                "rollback": False,
+                "duration_seconds": 0.0,
+                "cost_used_usd": 0.0,
+                "retries": 0,
+                "quality_score": 0.75,
+                "event": "recipe_apply",
+            }
+        )
 
     return RecipeApplyResult(
         ok=True,

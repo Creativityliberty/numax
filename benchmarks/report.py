@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any
+from numax.learning.mode_stats import compute_mode_stats
 
 
 def render_markdown_report(report: dict[str, Any]) -> str:
@@ -37,6 +38,25 @@ def render_markdown_report(report: dict[str, Any]) -> str:
             f"replay_ok={row.get('replay_ok')} "
             f"tokens={row.get('tokens_used')} "
             f"cost={row.get('cost_used_usd')}"
+        )
+
+    mode_profile_stats = compute_mode_stats(group_by="profile")
+    mode_recipe_stats = compute_mode_stats(group_by="recipe")
+
+    lines.append("\n## Mode Profile Stats\n")
+    for key, row in mode_profile_stats["stats"].items():
+        lines.append(
+            f"- {key}: success_rate={row['success_rate']:.2f}, "
+            f"rollback_rate={row['rollback_rate']:.2f}, "
+            f"avg_quality_score={row['avg_quality_score']:.2f}"
+        )
+
+    lines.append("\n## Mode Recipe Stats\n")
+    for key, row in mode_recipe_stats["stats"].items():
+        lines.append(
+            f"- {key}: success_rate={row['success_rate']:.2f}, "
+            f"rollback_rate={row['rollback_rate']:.2f}, "
+            f"avg_quality_score={row['avg_quality_score']:.2f}"
         )
 
     return "\n".join(lines)

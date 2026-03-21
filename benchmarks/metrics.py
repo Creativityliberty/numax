@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from typing import Any
+from numax.artifacts.evaluators import evaluate_artifact
 
 
 def task_success_rate(results: Iterable[dict]) -> float:
@@ -105,3 +106,10 @@ def compare_systems(summary_by_system: dict[str, dict[str, Any]]) -> dict[str, A
         "ranking": [name for name, _ in ranking],
         "winner": ranking[0][0] if ranking else None,
     }
+
+
+def artifact_validity_score(payload: dict) -> float:
+    if not payload:
+        return 0.0
+    scores = evaluate_artifact(payload)
+    return float(scores.get("overall", 0.0))

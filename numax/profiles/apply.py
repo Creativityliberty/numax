@@ -8,6 +8,7 @@ from numax.learning.model_selector import load_model_selector_policy, save_model
 from numax.learning.router import load_router_policy, save_router_policy
 from numax.profiles.registry import build_default_profile_registry
 from numax.skills.apply import apply_skill
+from numax.learning.mode_feedback import append_mode_feedback
 from numax.skills.runtime_overrides import load_runtime_overrides, save_runtime_overrides
 
 
@@ -69,5 +70,19 @@ def apply_profile(profile_id: str, preview: bool = True) -> ProfileApplyResult:
     critic_policy.update(profile.critic_policy)
     save_critic_policy(critic_policy)
     notes.append("Critic policy updated from profile.")
+
+    append_mode_feedback(
+        {
+            "profile": profile_id,
+            "recipe": None,
+            "success": True,
+            "rollback": False,
+            "duration_seconds": 0.0,
+            "cost_used_usd": 0.0,
+            "retries": 0,
+            "quality_score": 0.7,
+            "event": "profile_apply",
+        }
+    )
 
     return ProfileApplyResult(ok=True, profile_id=profile_id, notes=notes)

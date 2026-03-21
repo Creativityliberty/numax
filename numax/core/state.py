@@ -118,6 +118,13 @@ class NumaxState(BaseModel):
     external_subagent_result: dict[str, Any] = Field(default_factory=dict)
     external_subagent_history: list[dict[str, Any]] = Field(default_factory=list)
 
+    # V2 Learning state
+    active_feedback: dict[str, Any] = Field(default_factory=dict)
+    mode_recommendation: dict[str, Any] = Field(default_factory=dict)
+    learning_history: list[dict[str, Any]] = Field(default_factory=list)
+    mode_feedback: list[dict[str, Any]] = Field(default_factory=list)
+    mode_selection_result: dict[str, Any] = Field(default_factory=dict)
+
     trace: list[TraceEvent] = Field(default_factory=list)
 
     def add_trace(

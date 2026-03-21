@@ -4,7 +4,8 @@ import json
 import time
 import uuid
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict
+from numax.obs.span_bridge import export_span_record
 
 SPAN_LOG_PATH = Path("data/traces/spans.jsonl")
 SPAN_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -57,6 +58,7 @@ class Span:
         }
         with SPAN_LOG_PATH.open("a", encoding="utf-8") as f:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        export_span_record(record)
         return record
 
 
