@@ -9,11 +9,26 @@ def render_markdown_report(report: dict[str, Any]) -> str:
     lines = ["# NUMAX Benchmark Report", ""]
 
     summary = report.get("summary", {})
-    for system, metrics in summary.items():
+    ordered_systems = sorted(summary.keys())
+
+    for system in ordered_systems:
+        metrics = summary[system]
         lines.append(f"## {system}")
         for key, value in metrics.items():
             lines.append(f"- **{key}**: {value}")
         lines.append("")
+
+    lines.append("## Scenario Results")
+    lines.append("")
+    for row in report.get("results", []):
+        lines.append(
+            f"- `{row['system']}` on `{row['scenario_id']}` "
+            f"=> success={row.get('task_success')} "
+            f"artifact_valid={row.get('artifact_valid')} "
+            f"recovered={row.get('recovered')} "
+            f"tokens={row.get('tokens_used')} "
+            f"cost={row.get('cost_used_usd')}"
+        )
 
     return "\n".join(lines)
 

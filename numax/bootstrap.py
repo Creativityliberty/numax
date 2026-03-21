@@ -1,27 +1,42 @@
 from __future__ import annotations
 
-import os
-
+from numax.configs.loader import get_provider_config, get_routing_config, load_config
 from numax.models.catalog import ModelCatalog, ModelSpec
 from numax.models.resolver import ModelResolver, RuntimePolicy
+from numax.providers.anthropic import AnthropicProvider
+from numax.providers.google import GoogleProvider
 from numax.providers.mock import MockProvider
+from numax.providers.ollama import OllamaProvider
+from numax.providers.openai import OpenAIProvider
 from numax.providers.registry import ProviderRegistry
 
 
 def build_provider_registry() -> ProviderRegistry:
-    from numax.providers.auto_detect import build_auto_providers
-
     registry = ProviderRegistry()
-    registry.register(MockProvider())
-    for provider in build_auto_providers():
-        registry.register(provider)
+    config = load_config()
+    provider_cfg = get_provider_config(config)
+
+    if provider_cfg.get("mock", {}).get("enabled", True):
+        registry.register(MockProvider())
+
+    if provider_cfg.get("openai", {}).get("enabled", False):
+        registry.register(OpenAIProvider())
+
+    if provider_cfg.get("anthropic", {}).get("enabled", False):
+        registry.register(AnthropicProvider())
+
+    if provider_cfg.get("google", {}).get("enabled", False):
+        registry.register(GoogleProvider())
+
+    if provider_cfg.get("ollama", {}).get("enabled", False):
+        registry.register(OllamaProvider())
+
     return registry
 
 
 def build_model_catalog() -> ModelCatalog:
     catalog = ModelCatalog()
 
-    # Mock models
     catalog.register(
         ModelSpec(
             id="mock:mock-small",
@@ -33,7 +48,6 @@ def build_model_catalog() -> ModelCatalog:
             supports_tools=False,
         )
     )
-
     catalog.register(
         ModelSpec(
             id="mock:mock-large",
@@ -46,43 +60,89 @@ def build_model_catalog() -> ModelCatalog:
         )
     )
 
-    # Google Gemini Models (from docs/1.md)
     catalog.register(
         ModelSpec(
-            id="google:gemini-3.1-pro-preview",
-            provider="google",
-            model_name="gemini-3.1-pro-preview",
+            id="openai:gpt-4.1",
+            provider="openai",
+            model_name="gpt-4.1",
             roles=["primary", "critic"],
-            capabilities=["chat", "json", "vision"],
+            capabilities=["chat", "json", "tools"],
             supports_json=True,
             supports_tools=True,
-            pricing={"input": 2.0, "output": 12.0},
         )
     )
-
     catalog.register(
         ModelSpec(
-            id="google:gemini-3-flash-preview",
-            provider="google",
-            model_name="gemini-3-flash-preview",
-            roles=["primary", "light", "critic"],
-            capabilities=["chat", "json", "vision"],
-            supports_json=True,
-            supports_tools=True,
-            pricing={"input": 0.5, "output": 3.0},
-        )
-    )
-
-    catalog.register(
-        ModelSpec(
-            id="google:gemini-2.5-flash",
-            provider="google",
-            model_name="gemini-2.5-flash",
+            id="openai:gpt-4.1-mini",
+            provider="openai",
+            model_name="gpt-4.1-mini",
             roles=["light"],
-            capabilities=["chat", "json", "vision"],
+            capabilities=["chat", "json", "tools"],
             supports_json=True,
             supports_tools=True,
-            pricing={"input": 0.3, "output": 2.5},
+        )
+    )
+
+    catalog.register(
+        ModelSpec(
+            id="anthropic:claude-3-5-sonnet-latest",
+            provider="anthropic",
+            model_name="claude-3-5-sonnet-latest",
+            roles=["primary", "critic"],
+            capabilities=["chat", "json"],
+            supports_json=True,
+        )
+    )
+    catalog.register(
+        ModelSpec(
+            id="anthropic:claude-3-5-haiku-latest",
+            provider="anthropic",
+            model_name="claude-3-5-haiku-latest",
+            roles=["light"],
+            capabilities=["chat", "json"],
+            supports_json=True,
+        )
+    )
+
+    catalog.register(
+        ModelSpec(
+            id="google:gemini-1.5-pro",
+            provider="google",
+            model_name="gemini-1.5-pro",
+            roles=["primary", "critic"],
+            capabilities=["chat", "json"],
+            supports_json=True,
+        )
+    )
+    catalog.register(
+        ModelSpec(
+            id="google:gemini-1.5-flash",
+            provider="google",
+            model_name="gemini-1.5-flash",
+            roles=["light"],
+            capabilities=["chat", "json"],
+            supports_json=True,
+        )
+    )
+
+    catalog.register(
+        ModelSpec(
+            id="ollama:llama3.1",
+            provider="ollama",
+            model_name="llama3.1",
+            roles=["primary"],
+            capabilities=["chat"],
+            supports_json=False,
+        )
+    )
+    catalog.register(
+        ModelSpec(
+            id="ollama:qwen2.5",
+            provider="ollama",
+            model_name="qwen2.5",
+            roles=["light"],
+            capabilities=["chat"],
+            supports_json=False,
         )
     )
 
@@ -90,32 +150,21 @@ def build_model_catalog() -> ModelCatalog:
 
 
 def build_model_resolver(catalog: ModelCatalog) -> ModelResolver:
-    # Check if google key is available to decide preferred models
-    has_google = bool(os.getenv("GOOGLE_API_KEY"))
+    config = load_config()
+    routing_cfg = get_routing_config(config)
 
-    if has_google:
-        preferred = {
-            "primary": "google:gemini-3.1-pro-preview",
-            "light": "google:gemini-3-flash-preview",
-            "critic": "google:gemini-3-flash-preview",
-        }
-        fallbacks = {
-            "primary": ["google:gemini-2.5-flash"],
-            "critic": ["google:gemini-2.5-flash"],
-        }
-    else:
-        preferred = {
-            "primary": "mock:mock-large",
-            "light": "mock:mock-small",
-            "critic": "mock:mock-large",
-        }
-        fallbacks = {
-            "primary": ["mock:mock-small"],
-            "critic": ["mock:mock-small"],
-        }
+    preferred = {
+        "primary": routing_cfg.get("primary", "mock:mock-large"),
+        "light": routing_cfg.get("light", "mock:mock-small"),
+        "critic": routing_cfg.get("critic", "mock:mock-large"),
+    }
 
-    policy = RuntimePolicy(
-        preferred=preferred,
-        fallbacks=fallbacks,
-    )
+    raw_fallbacks = routing_cfg.get("fallbacks", {})
+    fallbacks = {
+        "primary": raw_fallbacks.get("primary", ["mock:mock-small"]),
+        "critic": raw_fallbacks.get("critic", ["mock:mock-small"]),
+        "light": raw_fallbacks.get("light", []),
+    }
+
+    policy = RuntimePolicy(preferred=preferred, fallbacks=fallbacks)
     return ModelResolver(catalog=catalog, policy=policy)
