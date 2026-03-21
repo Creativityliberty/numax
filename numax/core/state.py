@@ -95,9 +95,19 @@ class NumaxState(BaseModel):
 
     # V2 Improvement state
     improvement_suggestions: list[dict[str, Any]] = Field(default_factory=list)
-    retry_decision: dict[str, Any] = Field(default_factory=dict)
     mutation_decision: dict[str, Any] = Field(default_factory=dict)
     improvement_status: str | None = None
+
+    # V2 Profile state
+    active_profile: str | None = None
+    profile_history: list[str] = Field(default_factory=list)
+    profile_apply_result: dict[str, Any] = Field(default_factory=dict)
+
+    # V2 Runtime Resilience state
+    runtime_events: list[dict[str, Any]] = Field(default_factory=list)
+    event_buffer_status: dict[str, Any] = Field(default_factory=dict)
+    timeout_decision: dict[str, Any] = Field(default_factory=dict)
+    runtime_resilience_status: str | None = None
 
     trace: list[TraceEvent] = Field(default_factory=list)
 

@@ -25,6 +25,8 @@ from numax.flows.repo_repair import build_repo_repair_flow
 from numax.flows.subagent_review import build_subagent_review_flow
 from numax.flows.specification_loop import build_specification_loop_flow
 from numax.flows.improvement_loop import build_improvement_loop_flow
+from numax.flows.profile_apply import build_profile_apply_flow
+from numax.flows.runtime_resilience import build_runtime_resilience_flow
 from numax.health.startup_checks import run_startup_checks
 from numax.identity.runtime_identity import build_runtime_identity
 from numax.learning.critic_calibration import load_critic_policy
@@ -97,6 +99,12 @@ def run(
     elif flow == "improvement_loop":
         graph = build_improvement_loop_flow()
         start = "improvement_loop"
+    elif flow == "profile_apply":
+        graph = build_profile_apply_flow()
+        start = "profile_apply"
+    elif flow == "runtime_resilience":
+        graph = build_runtime_resilience_flow()
+        start = "runtime_collect_events"
     else:
         raise typer.BadParameter(f"Unsupported flow: {flow}")
 
@@ -469,6 +477,61 @@ def improve_run(
             "retry_decision": final_state.retry_decision,
             "mutation_decision": final_state.mutation_decision,
             "improvement_status": final_state.improvement_status,
+            "next_recommended_action": final_state.next_recommended_action,
+        }
+    )
+
+
+@app.command("profiles-list")
+def profiles_list() -> None:
+    from numax.profiles.registry import build_default_profile_registry
+    registry = build_default_profile_registry()
+    for profile_id in registry.list_ids():
+        profile = registry.get(profile_id)
+        typer.echo(f"{profile.profile_id} - {profile.title}")
+
+
+@app.command("profile-apply")
+def profile_apply_cmd(
+    profile_id: str = typer.Option(..., help="Profile identifier"),
+    preview: bool = typer.Option(True, help="Preview only"),
+) -> None:
+    from numax.profiles.apply import apply_profile
+    result = apply_profile(profile_id=profile_id, preview=preview)
+    typer.echo(
+        {
+            "ok": result.ok,
+            "profile_id": result.profile_id,
+            "notes": result.notes,
+        }
+    )
+
+
+@app.command("runtime-check")
+def runtime_check(
+    flow_name: str = typer.Option("basic_chat", help="Flow name"),
+    degraded: bool = typer.Option(False, help="Whether runtime is degraded"),
+) -> None:
+    state = NumaxState()
+    state.runtime.run_id = str(uuid.uuid4())
+    state.runtime.flow_name = flow_name
+    state.runtime.degraded = degraded
+
+    state.world_state["runtime_events"] = [
+        {"kind": "trace", "name": "flow_started", "payload": {}, "severity": "info"},
+        {"kind": "provider", "name": "provider_attempt", "payload": {"provider": "mock"}, "severity": "info"},
+        {"kind": "sdk_weird_unknown_kind", "name": "weird_event", "payload": {"x": 1}, "severity": "warning"},
+    ]
+
+    graph = build_runtime_resilience_flow()
+    final_state = graph.run(start="runtime_collect_events", state=state)
+
+    typer.echo(
+        {
+            "runtime_events": final_state.runtime_events,
+            "event_buffer_status": final_state.event_buffer_status,
+            "timeout_decision": final_state.timeout_decision,
+            "runtime_resilience_status": final_state.runtime_resilience_status,
             "next_recommended_action": final_state.next_recommended_action,
         }
     )
