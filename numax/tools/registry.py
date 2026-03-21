@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List
+from typing import Any
 
 
 @dataclass
@@ -10,7 +11,7 @@ class ToolSpec:
     description: str
     risk_level: str = "low"  # low | medium | high
     requires_confirmation: bool = False
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -21,7 +22,7 @@ class Tool:
 
 class ToolRegistry:
     def __init__(self) -> None:
-        self._tools: Dict[str, Tool] = {}
+        self._tools: dict[str, Tool] = {}
 
     def register(self, tool: Tool) -> None:
         if tool.spec.name in self._tools:
@@ -33,7 +34,7 @@ class ToolRegistry:
             raise KeyError(f"Unknown tool: {tool_name}")
         return self._tools[tool_name]
 
-    def list_tools(self) -> List[ToolSpec]:
+    def list_tools(self) -> list[ToolSpec]:
         return [tool.spec for tool in self._tools.values()]
 
     def call(self, tool_name: str, **kwargs: Any) -> Any:

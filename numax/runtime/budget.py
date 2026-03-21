@@ -50,7 +50,6 @@ def within_budget(state) -> bool:
         or state.budget.tokens_used <= state.budget.max_tokens_total
     )
     cost_ok = (
-        state.budget.max_cost_usd is None
-        or state.budget.cost_used_usd <= state.budget.max_cost_usd
+        state.budget.max_cost_usd is None or state.budget.cost_used_usd <= state.budget.max_cost_usd
     )
     return tokens_ok and cost_ok

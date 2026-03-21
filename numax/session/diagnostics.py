@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 from numax.core.state import NumaxState
 from numax.critic.confidence import aggregate_confidence
 
 
-def build_session_diagnostics(state: NumaxState) -> Dict[str, Any]:
+def build_session_diagnostics(state: NumaxState) -> dict[str, Any]:
     return {
         "run_id": state.runtime.run_id,
         "flow_name": state.runtime.flow_name,

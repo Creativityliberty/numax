@@ -5,25 +5,20 @@ from typing import Any, Dict
 
 import yaml
 
-
 CONFIG_DIR = Path("configs")
 
 
-def _read_yaml(path: Path) -> Dict[str, Any]:
+def _read_yaml(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {}
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     return data or {}
 
 
-def _deep_merge(base: Dict[str, Any], extra: Dict[str, Any]) -> Dict[str, Any]:
+def _deep_merge(base: dict[str, Any], extra: dict[str, Any]) -> dict[str, Any]:
     result = dict(base)
     for key, value in extra.items():
-        if (
-            key in result
-            and isinstance(result[key], dict)
-            and isinstance(value, dict)
-        ):
+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
             result[key] = _deep_merge(result[key], value)
         else:
             result[key] = value
@@ -36,7 +31,7 @@ def load_config() -> Dict[str, Any]:
     Merge order:
     base <- providers <- routing <- budget <- governance
     """
-    config = {}
+    config: Dict[str, Any] = {}
 
     for filename in [
         "base.yaml",
@@ -51,7 +46,7 @@ def load_config() -> Dict[str, Any]:
 
 
 def get_runtime_autonomy_mode(config: Dict[str, Any]) -> str:
-    return config.get("runtime", {}).get("autonomy_mode", "ASSISTED")
+    return str(config.get("runtime", {}).get("autonomy_mode", "ASSISTED"))
 
 
 def get_budget_limits(config: Dict[str, Any]) -> Dict[str, Any]:
@@ -64,8 +59,8 @@ def get_budget_limits(config: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def get_routing_config(config: Dict[str, Any]) -> Dict[str, Any]:
-    return config.get("models", {})
+    return dict(config.get("models", {}))
 
 
 def get_provider_config(config: Dict[str, Any]) -> Dict[str, Any]:
-    return config.get("providers", {})
+    return dict(config.get("providers", {}))

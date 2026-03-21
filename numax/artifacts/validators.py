@@ -29,10 +29,13 @@ def validate_artifact(artifact: Artifact) -> Artifact:
         style_acceptance=style_acceptance,
     )
 
-    if min(
-        artifact.quality.completeness,
-        artifact.quality.format_validity,
-    ) < 0.5:
+    if (
+        min(
+            artifact.quality.completeness,
+            artifact.quality.format_validity,
+        )
+        < 0.5
+    ):
         artifact.status = "invalid"
     else:
         artifact.status = "validated"

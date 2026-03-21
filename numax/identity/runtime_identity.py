@@ -3,10 +3,9 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from numax.bootstrap import build_model_catalog, build_provider_registry
-
 
 VERSION_FILE = Path("VERSION")
 
@@ -17,7 +16,7 @@ def read_version() -> str:
     return "0.0.0-dev"
 
 
-def build_runtime_identity(autonomy_mode: str = "ASSISTED") -> Dict[str, Any]:
+def build_runtime_identity(autonomy_mode: str = "ASSISTED") -> dict[str, Any]:
     provider_registry = build_provider_registry()
     model_catalog = build_model_catalog()
 
@@ -28,9 +27,7 @@ def build_runtime_identity(autonomy_mode: str = "ASSISTED") -> Dict[str, Any]:
         "models": sorted(model.id for model in model_catalog.all()),
     }
 
-    digest = hashlib.sha256(
-        json.dumps(payload, sort_keys=True).encode("utf-8")
-    ).hexdigest()
+    digest = hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
 
     payload["identity_hash"] = digest
     return payload

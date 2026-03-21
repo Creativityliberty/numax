@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-from typing import Dict, List
-
 from pydantic import BaseModel, Field
 
 from numax.models.catalog import ModelCatalog, ModelSpec
 
 
 class RuntimePolicy(BaseModel):
-    preferred: Dict[str, str] = Field(default_factory=dict)
-    fallbacks: Dict[str, List[str]] = Field(default_factory=dict)
+    preferred: dict[str, str] = Field(default_factory=dict)
+    fallbacks: dict[str, list[str]] = Field(default_factory=dict)
 
 
 class ModelResolver:

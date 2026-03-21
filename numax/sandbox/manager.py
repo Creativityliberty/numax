@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any
 
 
 @dataclass
@@ -16,7 +16,7 @@ class SandboxPolicy:
 class SandboxResult:
     allowed: bool
     reason: str
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 class SandboxManager:

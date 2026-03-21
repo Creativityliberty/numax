@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List
 
 from numax.identity.runtime_identity import build_runtime_identity
 
@@ -9,7 +8,7 @@ from numax.identity.runtime_identity import build_runtime_identity
 @dataclass
 class StartupCheckResult:
     ok: bool
-    notes: List[str] = field(default_factory=list)
+    notes: list[str] = field(default_factory=list)
 
 
 def run_startup_checks(autonomy_mode: str = "ASSISTED") -> StartupCheckResult:

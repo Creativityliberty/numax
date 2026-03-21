@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any
 
 from numax.subagents.config import SubagentConfig
 
@@ -9,12 +9,12 @@ from numax.subagents.config import SubagentConfig
 @dataclass
 class SubagentResult:
     ok: bool
-    output: Dict[str, Any]
+    output: dict[str, Any]
     notes: list[str]
 
 
 class SubagentRunner:
-    def run(self, config: SubagentConfig, task: Dict[str, Any]) -> SubagentResult:
+    def run(self, config: SubagentConfig, task: dict[str, Any]) -> SubagentResult:
         return SubagentResult(
             ok=True,
             output={

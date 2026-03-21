@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import List
-
 from numax.providers.base import (
     BaseProvider,
     CompletionRequest,
@@ -16,7 +14,7 @@ class MockProvider(BaseProvider):
     def __init__(self) -> None:
         self._models = ["mock-small", "mock-large"]
 
-    def list_models(self) -> List[str]:
+    def list_models(self) -> list[str]:
         return self._models
 
     def health(self) -> ProviderHealth:

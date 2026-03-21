@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List
 
 
 @dataclass
@@ -15,7 +14,7 @@ class SimpleRetrievalEngine:
     def __init__(self, documents: list[dict]) -> None:
         self.documents = documents
 
-    def search(self, query: str, top_k: int = 3) -> List[RetrievedChunk]:
+    def search(self, query: str, top_k: int = 3) -> list[RetrievedChunk]:
         query_terms = {term.lower() for term in query.split() if term.strip()}
         results: list[RetrievedChunk] = []
 

@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-from typing import Dict, List
-
 from numax.providers.base import BaseProvider, ProviderHealth
 
 
 class ProviderRegistry:
     def __init__(self) -> None:
-        self._providers: Dict[str, BaseProvider] = {}
+        self._providers: dict[str, BaseProvider] = {}
 
     def register(self, provider: BaseProvider) -> None:
         name = provider.provider_name
@@ -20,11 +18,11 @@ class ProviderRegistry:
             raise KeyError(f"Unknown provider: {provider_name}")
         return self._providers[provider_name]
 
-    def list_providers(self) -> List[str]:
+    def list_providers(self) -> list[str]:
         return sorted(self._providers.keys())
 
-    def list_models(self) -> List[dict]:
-        rows: List[dict] = []
+    def list_models(self) -> list[dict]:
+        rows: list[dict] = []
         for provider_name, provider in self._providers.items():
             for model in provider.list_models():
                 rows.append(
@@ -36,5 +34,5 @@ class ProviderRegistry:
                 )
         return rows
 
-    def health(self) -> List[ProviderHealth]:
+    def health(self) -> list[ProviderHealth]:
         return [provider.health() for provider in self._providers.values()]

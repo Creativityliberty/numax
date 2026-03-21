@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 from numax.bootstrap import (
     build_model_catalog,
@@ -15,7 +15,7 @@ from numax.providers.base import CompletionRequest
 class AnswerNode(NumaxNode):
     name = "answer"
 
-    def prep(self, state: NumaxState) -> Dict[str, Any]:
+    def prep(self, state: NumaxState) -> dict[str, Any]:
         payload = {
             "user_input": state.observation.get("raw_input", ""),
             "retrieved_context": state.retrieved_context,
@@ -23,7 +23,7 @@ class AnswerNode(NumaxNode):
         state.add_trace(self.name, "prep", "Answer payload prepared")
         return payload
 
-    def exec(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def exec(self, payload: dict[str, Any]) -> dict[str, Any]:
         registry = build_provider_registry()
         catalog = build_model_catalog()
         resolver = build_model_resolver(catalog)
@@ -55,8 +55,8 @@ class AnswerNode(NumaxNode):
     def post(
         self,
         state: NumaxState,
-        payload: Dict[str, Any],
-        result: Dict[str, Any],
+        payload: dict[str, Any],
+        result: dict[str, Any],
     ) -> str:
         state.candidate_output = result["candidate_output"]
         state.confidence.output_confidence = 0.75

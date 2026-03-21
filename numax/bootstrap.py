@@ -4,8 +4,8 @@ import os
 
 from numax.models.catalog import ModelCatalog, ModelSpec
 from numax.models.resolver import ModelResolver, RuntimePolicy
-from numax.providers.mock import MockProvider
 from numax.providers.google import GoogleProvider
+from numax.providers.mock import MockProvider
 from numax.providers.registry import ProviderRegistry
 
 
@@ -54,7 +54,7 @@ def build_model_catalog() -> ModelCatalog:
             capabilities=["chat", "json", "vision"],
             supports_json=True,
             supports_tools=True,
-            pricing={"input": 2.0, "output": 12.0}
+            pricing={"input": 2.0, "output": 12.0},
         )
     )
 
@@ -67,10 +67,10 @@ def build_model_catalog() -> ModelCatalog:
             capabilities=["chat", "json", "vision"],
             supports_json=True,
             supports_tools=True,
-            pricing={"input": 0.5, "output": 3.0}
+            pricing={"input": 0.5, "output": 3.0},
         )
     )
-    
+
     catalog.register(
         ModelSpec(
             id="google:gemini-2.5-flash",
@@ -80,7 +80,7 @@ def build_model_catalog() -> ModelCatalog:
             capabilities=["chat", "json", "vision"],
             supports_json=True,
             supports_tools=True,
-            pricing={"input": 0.3, "output": 2.5}
+            pricing={"input": 0.3, "output": 2.5},
         )
     )
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List
 
 from numax.governance.priorities import GovernancePriority
 
@@ -16,14 +15,14 @@ class ConstitutionalRule:
 
 @dataclass
 class NumaxConstitution:
-    rules: Dict[str, ConstitutionalRule] = field(default_factory=dict)
+    rules: dict[str, ConstitutionalRule] = field(default_factory=dict)
 
     def get(self, name: str) -> ConstitutionalRule:
         if name not in self.rules:
             raise KeyError(f"Unknown constitutional rule: {name}")
         return self.rules[name]
 
-    def list_rules(self) -> List[ConstitutionalRule]:
+    def list_rules(self) -> list[ConstitutionalRule]:
         return sorted(
             self.rules.values(),
             key=lambda rule: rule.priority,

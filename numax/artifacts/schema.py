@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -16,11 +16,11 @@ class ArtifactQuality(BaseModel):
 
 
 class ArtifactTrace(BaseModel):
-    run_id: Optional[str] = None
-    flow_name: Optional[str] = None
-    source_ids: List[str] = Field(default_factory=list)
-    model_ids: List[str] = Field(default_factory=list)
-    notes: List[str] = Field(default_factory=list)
+    run_id: str | None = None
+    flow_name: str | None = None
+    source_ids: list[str] = Field(default_factory=list)
+    model_ids: list[str] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
 
 
 class Artifact(BaseModel):
@@ -28,7 +28,7 @@ class Artifact(BaseModel):
     artifact_type: ArtifactType
     title: str
     content: Any
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
     quality: ArtifactQuality = Field(default_factory=ArtifactQuality)
     trace: ArtifactTrace = Field(default_factory=ArtifactTrace)
     status: str = "draft"

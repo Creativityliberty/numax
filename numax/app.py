@@ -13,7 +13,6 @@ from numax.flows.planning_execution import build_planning_execution_flow
 from numax.flows.retrieval_answer import build_retrieval_answer_flow
 from numax.health.startup_checks import run_startup_checks
 from numax.identity.runtime_identity import build_runtime_identity
-from numax.mcp.server import mcp
 from numax.memory.continuity import restore_continuity, save_continuity_state
 from numax.obs.traces import save_run_trace
 from numax.session.diagnostics import build_session_diagnostics
@@ -107,7 +106,8 @@ def tools_list() -> None:
     registry = build_default_tool_registry()
     for spec in registry.list_tools():
         typer.echo(
-            f"{spec.name} risk={spec.risk_level} confirm={spec.requires_confirmation} tags={spec.tags}"
+            f"{spec.name} risk={spec.risk_level} "
+            f"confirm={spec.requires_confirmation} tags={spec.tags}"
         )
 
 
@@ -128,6 +128,7 @@ def serve(
     port: int = typer.Option(8000),
 ) -> None:
     import uvicorn
+
     uvicorn.run("numax.server.app:app", host=host, port=port, reload=True)
 
 

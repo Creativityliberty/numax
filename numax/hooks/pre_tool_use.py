@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any
 
 from numax.guardian.permission_judge import judge_tool_permission
 from numax.sandbox.manager import SandboxManager
@@ -12,7 +12,7 @@ from numax.tools.registry import ToolSpec
 class PreToolUseDecision:
     action: str  # allow | deny | ask
     reason: str
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 def pre_tool_use(

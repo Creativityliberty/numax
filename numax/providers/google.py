@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from typing import List
 
 import httpx
 
@@ -19,7 +18,7 @@ class GoogleProvider(BaseProvider):
     def __init__(self, api_key: str | None = None) -> None:
         self.api_key = api_key or os.getenv("GOOGLE_API_KEY")
 
-    def list_models(self) -> List[str]:
+    def list_models(self) -> list[str]:
         return [
             "gemini-3.1-pro-preview",
             "gemini-3-flash-preview",
@@ -51,26 +50,24 @@ class GoogleProvider(BaseProvider):
 
         if request.max_tokens:
             payload["generationConfig"]["maxOutputTokens"] = request.max_tokens
-            
+
         if request.response_format == "json":
             payload["generationConfig"]["responseMimeType"] = "application/json"
 
         if request.system_prompt:
-             payload["systemInstruction"] = {
-                 "parts": [{"text": request.system_prompt}]
-             }
+            payload["systemInstruction"] = {"parts": [{"text": request.system_prompt}]}
 
         with httpx.Client() as client:
             resp = client.post(url, json=payload, timeout=60.0)
             resp.raise_for_status()
 
             data = resp.json()
-            
+
             try:
                 content = data["candidates"][0]["content"]["parts"][0]["text"]
             except (KeyError, IndexError):
                 content = ""
-                
+
             usage = data.get("usageMetadata", {})
 
             return CompletionResponse(

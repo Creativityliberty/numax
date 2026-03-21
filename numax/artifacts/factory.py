@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any, List
+from typing import Any
 
 from numax.artifacts.schema import Artifact
 from numax.core.state import NumaxState
@@ -12,15 +12,11 @@ def build_artifact_from_state(
     artifact_type: str = "summary",
     title: str = "NUMAX Output",
 ) -> Artifact:
-    source_ids: List[str] = []
+    source_ids: list[str] = []
     if state.retrieved_context:
-        source_ids = [
-            item["source_id"]
-            for item in state.retrieved_context
-            if "source_id" in item
-        ]
+        source_ids = [item["source_id"] for item in state.retrieved_context if "source_id" in item]
 
-    model_ids: List[str] = []
+    model_ids: list[str] = []
     if isinstance(state.final_output, dict):
         provider = state.final_output.get("provider")
         model = state.final_output.get("model")

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 
-class ErrorCategory(str, Enum):
+class ErrorCategory(StrEnum):
     UNDERSTANDING_ERROR = "UNDERSTANDING_ERROR"
     ROUTING_ERROR = "ROUTING_ERROR"
     SOURCE_ERROR = "SOURCE_ERROR"

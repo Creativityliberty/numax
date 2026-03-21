@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List
 
 from numax.critic.confidence import aggregate_confidence
 
@@ -12,11 +11,11 @@ class KillSwitchDecision:
     degrade: bool
     escalate: bool
     reason: str
-    violated_rules: List[str]
+    violated_rules: list[str]
 
 
 def evaluate_kill_switch(state) -> KillSwitchDecision:
-    violated_rules: List[str] = []
+    violated_rules: list[str] = []
 
     if state.confidence.safety_confidence < 0.6:
         violated_rules.append("safety_first")

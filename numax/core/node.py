@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any
 
 from numax.core.state import NumaxState
 
@@ -10,7 +10,7 @@ class NumaxNode(ABC):
     name: str = "unnamed"
     max_retries: int = 0
 
-    def prep(self, state: NumaxState) -> Dict[str, Any]:
+    def prep(self, state: NumaxState) -> dict[str, Any]:
         """
         Read from state and prepare an execution payload.
         """
@@ -18,7 +18,7 @@ class NumaxNode(ABC):
         return {}
 
     @abstractmethod
-    def exec(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def exec(self, payload: dict[str, Any]) -> dict[str, Any]:
         """
         Pure execution step.
         Should not mutate state directly.
@@ -28,9 +28,9 @@ class NumaxNode(ABC):
     def exec_fallback(
         self,
         state: NumaxState,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
         exc: Exception,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Fallback path on execution error.
         Default behavior: re-raise.
@@ -46,8 +46,8 @@ class NumaxNode(ABC):
     def post(
         self,
         state: NumaxState,
-        payload: Dict[str, Any],
-        result: Dict[str, Any],
+        payload: dict[str, Any],
+        result: dict[str, Any],
     ) -> str:
         """
         Write execution results to state and return the transition label.

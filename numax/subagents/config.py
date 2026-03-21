@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from typing import List, Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
-
 
 PermissionMode = Literal[
     "default",
@@ -24,9 +23,9 @@ class SubagentConfig(BaseModel):
     description: str = ""
     max_turns: int = 4
     timeout_seconds: int = 60
-    allowed_tools: List[str] = Field(default_factory=list)
-    disallowed_tools: List[str] = Field(default_factory=list)
+    allowed_tools: list[str] = Field(default_factory=list)
+    disallowed_tools: list[str] = Field(default_factory=list)
     permission_mode: PermissionMode = "default"
     return_mode: ReturnMode = "final_only"
     sandbox_mode: str = "read_only"
-    fallback_model_role: Optional[str] = None
+    fallback_model_role: str | None = None

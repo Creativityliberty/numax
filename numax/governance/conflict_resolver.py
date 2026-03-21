@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List
 
 from numax.governance.constitution import NumaxConstitution, build_default_constitution
 
@@ -57,7 +56,7 @@ class GovernanceConflictResolver:
             ),
         )
 
-    def resolve_many(self, candidates: List[str]) -> str:
+    def resolve_many(self, candidates: list[str]) -> str:
         if not candidates:
             raise ValueError("No candidates provided for conflict resolution.")
 

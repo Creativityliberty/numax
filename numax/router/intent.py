@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 from numax.core.node import NumaxNode
 from numax.core.state import NumaxState
@@ -9,7 +9,7 @@ from numax.core.state import NumaxState
 class IntentRouterNode(NumaxNode):
     name = "intent_router"
 
-    def prep(self, state: NumaxState) -> Dict[str, Any]:
+    def prep(self, state: NumaxState) -> dict[str, Any]:
         state.runtime.fsm_state = "UNDERSTAND"
 
         user_input = state.observation.get("raw_input", "")
@@ -24,7 +24,7 @@ class IntentRouterNode(NumaxNode):
         state.add_trace(self.name, "prep", "Intent router payload prepared", **payload)
         return payload
 
-    def exec(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def exec(self, payload: dict[str, Any]) -> dict[str, Any]:
         text = str(payload["user_input"]).strip().lower()
 
         needs_retrieval_keywords = [
@@ -58,8 +58,8 @@ class IntentRouterNode(NumaxNode):
     def post(
         self,
         state: NumaxState,
-        payload: Dict[str, Any],
-        result: Dict[str, Any],
+        payload: dict[str, Any],
+        result: dict[str, Any],
     ) -> str:
         route = result["route"]
         state.confidence.understanding_confidence = result["understanding_confidence"]

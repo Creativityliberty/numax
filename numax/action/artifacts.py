@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 from numax.artifacts.factory import build_artifact_from_state
 from numax.artifacts.validators import validate_artifact
@@ -11,7 +11,7 @@ from numax.core.state import NumaxState
 class ArtifactNode(NumaxNode):
     name = "artifact"
 
-    def prep(self, state: NumaxState) -> Dict[str, Any]:
+    def prep(self, state: NumaxState) -> dict[str, Any]:
         payload = {
             "artifact_type": state.world_state.get("artifact_type", "summary"),
             "artifact_title": state.world_state.get("artifact_title", "NUMAX Output"),
@@ -19,7 +19,7 @@ class ArtifactNode(NumaxNode):
         state.add_trace(self.name, "prep", "Artifact payload prepared", **payload)
         return payload
 
-    def exec(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def exec(self, payload: dict[str, Any]) -> dict[str, Any]:
         return {
             "artifact_type": payload["artifact_type"],
             "artifact_title": payload["artifact_title"],
@@ -28,8 +28,8 @@ class ArtifactNode(NumaxNode):
     def post(
         self,
         state: NumaxState,
-        payload: Dict[str, Any],
-        result: Dict[str, Any],
+        payload: dict[str, Any],
+        result: dict[str, Any],
     ) -> str:
         artifact = build_artifact_from_state(
             state=state,

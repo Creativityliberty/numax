@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 from numax.core.node import NumaxNode
 from numax.core.state import NumaxState
@@ -11,7 +11,7 @@ from numax.tools.default_tools import build_default_tool_registry
 class ToolConfirmationRouterNode(NumaxNode):
     name = "tool_confirmation_router"
 
-    def prep(self, state: NumaxState) -> Dict[str, Any]:
+    def prep(self, state: NumaxState) -> dict[str, Any]:
         tool_request = state.world_state.get("tool_request")
         if not tool_request:
             raise ValueError("No tool_request found in world_state.")
@@ -24,7 +24,7 @@ class ToolConfirmationRouterNode(NumaxNode):
         state.add_trace(self.name, "prep", "Tool confirmation payload prepared", **payload)
         return payload
 
-    def exec(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def exec(self, payload: dict[str, Any]) -> dict[str, Any]:
         registry = build_default_tool_registry()
         tool = registry.get(payload["tool_name"])
 
@@ -41,8 +41,8 @@ class ToolConfirmationRouterNode(NumaxNode):
     def post(
         self,
         state: NumaxState,
-        payload: Dict[str, Any],
-        result: Dict[str, Any],
+        payload: dict[str, Any],
+        result: dict[str, Any],
     ) -> str:
         state.world_state["tool_permission"] = result
         state.add_trace(

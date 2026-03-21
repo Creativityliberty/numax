@@ -1,5 +1,6 @@
 import os
 from unittest.mock import patch
+
 from numax.bootstrap import build_model_catalog, build_model_resolver
 
 
@@ -25,4 +26,3 @@ def test_model_resolver_returns_google_when_key_exists():
     assert spec.id == "google:gemini-3.1-pro-preview"
     assert spec.provider == "google"
     assert spec.model_name == "gemini-3.1-pro-preview"
-

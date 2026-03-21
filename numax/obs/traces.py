@@ -6,7 +6,6 @@ from typing import Any
 
 from numax.core.state import NumaxState
 
-
 TRACE_DIR = Path("data/traces")
 TRACE_DIR.mkdir(parents=True, exist_ok=True)
 

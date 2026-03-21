@@ -1,7 +1,7 @@
 from numax.core.graph import NumaxGraph
-from numax.router.intent import IntentRouterNode
-from numax.reason.answer import AnswerNode
 from numax.critic.basic import BasicCriticNode
+from numax.reason.answer import AnswerNode
+from numax.router.intent import IntentRouterNode
 
 
 def build_basic_chat_flow() -> NumaxGraph:

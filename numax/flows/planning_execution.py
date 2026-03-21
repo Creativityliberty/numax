@@ -1,9 +1,9 @@
 from numax.core.graph import NumaxGraph
-from numax.router.intent import IntentRouterNode
-from numax.planner.task import PlannerNode
-from numax.retrieve.node import RetrieveNode
-from numax.reason.answer import AnswerNode
 from numax.critic.basic import BasicCriticNode
+from numax.planner.task import PlannerNode
+from numax.reason.answer import AnswerNode
+from numax.retrieve.node import RetrieveNode
+from numax.router.intent import IntentRouterNode
 
 
 def build_planning_execution_flow() -> NumaxGraph:

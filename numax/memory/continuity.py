@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Optional
 
 from numax.core.state import NumaxState
 
@@ -23,7 +22,7 @@ def save_continuity_state(state: NumaxState, path: str) -> None:
     state.add_trace("continuity", "post", "Continuity state saved", path=str(target))
 
 
-def load_continuity_state(path: str) -> Optional[dict]:
+def load_continuity_state(path: str) -> dict | None:
     target = Path(path)
     if not target.exists():
         return None
