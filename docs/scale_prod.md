@@ -7,106 +7,61 @@ Il sert à répondre à deux questions :
 
 ---
 
-## 1. Où en est NUMAX aujourd’hui
+## 1. Le Constat : L'Architecture est Figée, Place à l'Opérationnel
 
-NUMAX est déjà un système local sérieux avec :
-- noyau exécutable,
-- flows,
-- providers/models,
-- critic,
-- budget,
-- mémoire,
-- artefacts,
-- benchmark,
-- journal JSON des skills,
-- replay / rollback,
-- server-first,
-- observabilité locale.
+Avec NUMAX V2, le design n'est plus en chantier principal. La boucle OODA gouvernée (Routing, Memory, Critic, Sandbox, Benchmark, Skills JSON) est fermement établie et testée mathématiquement. 
 
-En revanche, NUMAX n’est pas encore un runtime scale/prod complet. Le passage à l’étape suivante demande surtout : **durcissement, connectivité réelle, persistance partagée, observabilité standard, exécution asynchrone, gouvernance multi-instance.**
+> **L'upgrade maintenant, c'est l'opérationnalisation.**
+
+Le passage d'un excellent framework local à un **véritable runtime déployable (Multi-tenant, Long-Running, Réparti)** repose exclusivement sur les 4 Piliers de Scale détaillés ci-dessous.
+
+### Pilier 1 : Connectivité Providers Réellement Async
+Le graphe actuel invoque les providers de manière abstraite. Pour tenir la charge réseau et les spécificités des LLMs modernes, l'exécution doit passer 100% Async.
+- **Async/Await Natif** : Remplacer les wrappers bloquants.
+- **Streaming** : Interaction real-time avec le client.
+- **Tracking / Fallback** : Switch sur timeout de 3s, ou blacklist temporaire d'un provider si erreur 429.
+
+### Pilier 2 : Persistance Base de Données (Shared Memory)
+L'Hippocampe (la mémoire hiérarchisée) et le Skills Journal écrivent pour l'instant dans des flatfiles `data/state/*.json`.
+- **État Partagé** : Pivoter sur **PostgreSQL** ou **Redis** pour un cluster Kubernetes stateless.
+- **Mémoire Sémantique** : Intégration d'une DB Vectorielle (**LanceDB**, **Qdrant**, **PGVector**).
+- **Multi-Tenant (RBAC & Auth)** : Isoler les mémoires et le budget global par `user_id` et `session_id`.
+
+### Pilier 3 : Long-Running Tasks & Workers
+L'itération de boucle du graphe FSM s'exécute linéairement. Si une "Deep Research" nécessite 4 heures, le serveur HTTP plantera.
+- **Queues & Workers** : Découpler l'API de l'exécution via **Temporal.io**, **Celery**, ou **RabbitMQ**.
+- **Wake & Sleep Mode** : Le FSM s'endort en DB s'il attend un input humain.
+- **Réveil Asynchrone** : Les Workers récupèrent la tâche et relancent le graphe OODA précisément à l'étape correspondante.
+
+### Pilier 4 : Observabilité Standardisée (OTel)
+La `state.trace` (JSONL local) est impuissante pour débugger un système en essaim traitant des milliers d'intentions.
+- **OpenTelemetry (OTel)** : Émission de Spans imbriqués.
+- **Dashboards** : En direct via **Grafana**, **Jaeger**, ou **Langfuse**.
+- **Correlation** : Lier `session_id`, `tool_id`, `model_used` et `latency`.
 
 ---
 
-## 2. Plan Scale / Prod
+## 2. Implémentation Pratique (Stack & Fichiers Ciblés)
 
-### 2.1. Providers réellement production-ready
-**État actuel** : abstraction provider propre, providers mock + réels branchables, fallback modèle/provider de base, health checks simples.
-**Upgrade attendu** :
-* appels async natifs
-* streaming
-* gestion fine des timeouts
-* erreurs provider normalisées
-* budget/cost réel par provider
-* tracing par appel provider
-* retry policy configurable
+En complément des piliers, voici l'impact direct sur la structure du repo.
 
-**Fichiers futurs probables** : 
-`numax/providers/async_base.py`, `numax/providers/policies.py`, `numax/providers/costs.py`, `numax/providers/retries.py`
+**Providers Production-ready**
+Fichiers probables : `numax/providers/async_base.py`, `numax/providers/policies.py`, `numax/providers/costs.py`, `numax/providers/retries.py`
 
-### 2.2. Persistance et mémoire partagée
-**État actuel** : JSON local, continuité locale, journaux skills locaux, feedback learning local.
-**Upgrade attendu** :
-* stockage partagé entre instances
-* sessions centralisées
-* mémoire sémantique plus robuste
-* lecture/écriture concurrente fiable
+**Persistance (Redis/Vector)**
+Fichiers probables : `numax/storage/base.py`, `numax/storage/local_json.py`, `numax/storage/sqlite.py`, `numax/storage/redis.py`, `numax/storage/vector.py`
 
-**Stack possible** : Redis (état rapide / coordination), SQLite/Postgres (journalisation durable), LanceDB / Qdrant / PGVector (mémoire sémantique).
+**Jobs & Workers (Celery/Temporal)**
+Fichiers probables : `numax/jobs/queue.py`, `numax/jobs/worker.py`, `numax/jobs/scheduler.py`, `numax/jobs/state_machine_bridge.py`
 
-**Fichiers futurs probables** : 
-`numax/storage/base.py`, `numax/storage/local_json.py`, `numax/storage/sqlite.py`, `numax/storage/redis.py`, `numax/storage/vector.py`
+**Observabilité OTel**
+Fichiers probables : `numax/obs/otel.py`, `numax/obs/spans.py`, `numax/obs/metrics_export.py`, `numax/obs/correlation.py`
 
-### 2.3. Long-running tasks / workers
-**État actuel** : flows synchrones, exécution locale séquentielle.
-**Upgrade attendu** :
-* tâches longues découplées
-* reprise automatique
-* supervision des jobs
-* retry différé
-* pause / resume explicites
+**Sécurité & Isolation**
+Fichiers probables : `numax/security/prompt_injection.py`, `numax/security/tool_risk_classifier.py`, `numax/sandbox/runtime_isolation.py`
 
-**Stack possible** : Celery, Dramatiq, RQ, Temporal.
-
-**Fichiers futurs probables** : 
-`numax/jobs/queue.py`, `numax/jobs/worker.py`, `numax/jobs/scheduler.py`, `numax/jobs/state_machine_bridge.py`
-
-### 2.4. Observabilité standardisée
-**État actuel** : traces JSONL, diagnostics synthétiques, identité runtime.
-**Upgrade attendu** :
-* spans OTel
-* corrélation run/session/tool/model/provider
-* dashboards
-* alerting
-* analyse de goulots
-
-**Stack possible** : OpenTelemetry, Jaeger, Grafana, Langfuse.
-
-**Fichiers futurs probables** : 
-`numax/obs/otel.py`, `numax/obs/spans.py`, `numax/obs/metrics_export.py`, `numax/obs/correlation.py`
-
-### 2.5. Sécurité opératoire réelle
-**État actuel** : permissions logiques, sandbox logique, kill switch.
-**Upgrade attendu** :
-* sandbox système réelle
-* isolation des outils à risque
-* classification avancée du risque
-* secrets handling propre
-* prompt injection defense plus robuste
-
-**Fichiers futurs probables** : 
-`numax/security/prompt_injection.py`, `numax/security/tool_risk_classifier.py`, `numax/security/secrets_policy.py`, `numax/sandbox/runtime_isolation.py`
-
-### 2.6. Plateforme multi-user / multi-tenant
-**État actuel** : sessions locales, API simple.
-**Upgrade attendu** :
-* auth
-* RBAC
-* ownership
-* quotas
-* isolation de sessions par utilisateur / équipe
-
-**Fichiers futurs probables** :
-`numax/auth/`, `numax/rbac/`, `numax/server/middleware/auth.py`, `numax/server/middleware/tenant.py`
+**Plateforme Multi-tenant (Auth / RBAC)**
+Fichiers probables : `numax/auth/`, `numax/rbac/`, `numax/server/middleware/auth.py`, `numax/server/middleware/tenant.py`
 
 ---
 
@@ -135,7 +90,7 @@ Légende :
 | **Governance const.** | ✅ | priorités, conflit, politique interne | Gouvernance multi-tenant |
 | **Tool registry** | ✅ | outils typés avec risque | Surface outillage plus riche |
 | **Permission judge** | ✅ | allow / ask / deny | Règles plus fines par profil |
-| **Sandbox** | 🟡 | sandbox logique | Vraie isolation système |
+| **Sandbox** | 🟡 | sandbox logique | Vraie isolation OS/système |
 | **Memory continuity** | ✅ | save/load continuité | Backend partagé |
 | **Memory promotion** | ✅ | working → episodic → semantic | Scoring plus intelligent |
 | **Memory forgetting** | ✅ | oubli contrôlé | Oubli contextuel plus fin |
@@ -171,7 +126,7 @@ Légende :
 | **Sessions** | ✅ | create/list/get | Persistance multi-user |
 | **Traces** | ✅ | JSONL par run | OTel / spans |
 | **Diagnostics** | ✅ | diagnostics de session | Dashboards |
-| **Runtime identity** | ✅ | hash/identity | Drift detection plus complet |
+| **Runtime identity** | ✅ | hash/identity | Drift detection complet |
 | **Startup checks** | ✅ | checks simples | Checks infra plus larges |
 | **Tests unitaires** | ✅ | beaucoup de briques testées | Couverture à élargir |
 | **Tests intégration** | ✅ | flows + benchmark | Tests de résilience plus sévères |
@@ -214,24 +169,18 @@ Pas encore totalement industriel : async réel, storage partagé, workers, sandb
 
 ---
 
-## 6. Ce qu’il manque encore, en bref
+## 6. Synthèse de la Route de Scale
 
-| Manque | Pourquoi c’est important |
+| Chantier de Scale | Pourquoi c’est critique |
 | :--- | :--- |
-| **Providers async / streaming** | Passage à la vraie prod |
-| **Storage partagé** | Mémoire/sessions multi-instance |
-| **Workers / long tasks** | Tâches longues et reprise réelle |
-| **OTel / observabilité standard**| Lisibilité scale |
-| **Sandbox réelle** | Sécurité opératoire |
-| **Skills à effets concrets** | Mutation vraiment utile |
-| **Benchmark plus réaliste** | Preuve plus solide |
-| **Artifact scoring métier** | Valeur finale mesurable |
-| **RBAC / auth** | Passage plateforme |
+| **Providers async / streaming** | Tenir 50+ requêtes LLM lourdes en parallèle sans écrouler l'interface. |
+| **Storage partagé (Redis/Vector)** | Partager la Session Continuity et l'Hybrid Search RAG sur 10 Pods stateless. |
+| **Workers / long tasks (Temporal)**| Éviter les pannes réseau si un Workflow RAG profond dure 3 heures. |
+| **OTel / observabilité standard**| Tracer une hallucination à travers 5 nœuds sans ouvrir de fichiers logs en SSH. |
+| **Sandbox réelle (Firecracker)** | Isoler le code généré par l'agent pour éviter la corruption du host. |
+| **Skills à effets concrets** | Permettre à NUMAX d'installer lui-même ses propres packages MCP. |
+| **Benchmark plus réaliste** | Modéliser une panne de Cloudflare dans la notation de robustesse de NUMAX. |
+| **Artifact scoring métier** | Valider la syntaxe et sémantique métier des JSON/Code plutôt qu'uniquement via LLM. |
+| **RBAC / Auth Multicompte** | Lancer NUMAX pour des équipes B2B avec des Data Silos stricts. |
 
----
-
-## 7. Verdict final
-
-NUMAX n’est plus un simple concept. NUMAX est déjà un framework système cohérent, avec une vraie colonne vertébrale. Ce qui reste à faire se concentre sur : le **scale**, la **prod**, la **sécurité réelle**, l'**infra distribuée** et la **preuve expérimentale plus dure**.
-
-> NUMAX a déjà absorbé la majorité des pièces du puzzle structurantes. Ce qui manque maintenant n’est plus le cœur du système, mais son durcissement, sa preuve forte, et son passage en échelle réelle.
+L'accomplissement de ces points marquera le point où NUMAX V3 ne sera plus jugé sur son intelligence structurelle, mais sur sa capacité à traiter **10,000 requests asynchrones concurrentes avec une perte de mémoire de 0% et un crash système inexistant**.
