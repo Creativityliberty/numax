@@ -213,5 +213,21 @@ def skill_replay_cmd() -> None:
     typer.echo(f"OK: {result.ok} Notes: {result.notes}")
 
 
+@app.command("async-providers-list")
+def async_providers_list() -> None:
+    from numax.providers.async_bootstrap import build_async_provider_registry
+
+    registry = build_async_provider_registry()
+    typer.echo(registry.list_providers())
+
+
+@app.command("store-backend")
+def store_backend() -> None:
+    from numax.storage.bootstrap import build_default_store
+    
+    store = build_default_store()
+    typer.echo(type(store).__name__)
+
+
 if __name__ == "__main__":
     app()
