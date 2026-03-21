@@ -26,6 +26,9 @@ def render_markdown_report(report: dict[str, Any]) -> str:
             f"=> success={row.get('task_success')} "
             f"artifact_valid={row.get('artifact_valid')} "
             f"recovered={row.get('recovered')} "
+            f"continuity={row.get('continuity_score')} "
+            f"rollback_ok={row.get('rollback_ok')} "
+            f"replay_ok={row.get('replay_ok')} "
             f"tokens={row.get('tokens_used')} "
             f"cost={row.get('cost_used_usd')}"
         )

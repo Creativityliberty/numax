@@ -25,7 +25,6 @@ from numax.learning.model_selector import load_model_selector_policy
 from numax.learning.policy_feedback import apply_feedback
 from numax.learning.retrieval_ranker import load_ranker_policy
 from numax.learning.router import load_router_policy
-
 from numax.memory.continuity import restore_continuity, save_continuity_state
 from numax.obs.traces import save_run_trace
 from numax.session.diagnostics import build_session_diagnostics
@@ -120,6 +119,7 @@ def tools_list() -> None:
 @app.command("mcp-capabilities")
 def mcp_capabilities() -> None:
     from numax.mcp.server import mcp
+
     typer.echo(f"MCP Server initialized: {mcp.name}")
 
 

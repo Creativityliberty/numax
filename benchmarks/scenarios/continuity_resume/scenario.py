@@ -17,4 +17,8 @@ def get_scenario() -> dict:
                 "score": 2.0,
             }
         ],
+        "inject_tool_history": [
+            {"tool": "retrieve.search", "ok": True},
+            {"tool": "critic.validate", "ok": True},
+        ],
     }
