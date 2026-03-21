@@ -40,7 +40,6 @@ def budget_efficiency_score(results: Iterable[dict]) -> float:
     rows = list(results)
     if not rows:
         return 0.0
-
     scores = []
     for row in rows:
         success = 1.0 if row.get("task_success") else 0.0
@@ -48,7 +47,6 @@ def budget_efficiency_score(results: Iterable[dict]) -> float:
         tokens = float(row.get("tokens_used", 0.0))
         denominator = 1.0 + cost + (tokens / 10000.0)
         scores.append(success / denominator)
-
     return sum(scores) / len(scores)
 
 
@@ -56,7 +54,6 @@ def mutation_safety_score(results: Iterable[dict]) -> float:
     rows = list(results)
     if not rows:
         return 0.0
-
     safe = 0
     for row in rows:
         rollback_ok = row.get("rollback_ok", False)
@@ -76,4 +73,35 @@ def summarize_metrics(results: Iterable[dict]) -> dict[str, Any]:
         "budget_efficiency_score": budget_efficiency_score(rows),
         "mutation_safety_score": mutation_safety_score(rows),
         "count": len(rows),
+    }
+
+
+def compute_victory_score(summary: dict[str, Any]) -> float:
+    return (
+        0.30 * float(summary.get("task_success_rate", 0.0))
+        + 0.20 * float(summary.get("recovery_success_rate", 0.0))
+        + 0.20 * float(summary.get("continuity_resume_score", 0.0))
+        + 0.20 * float(summary.get("mutation_safety_score", 0.0))
+        + 0.10 * float(summary.get("artifact_validity_rate", 0.0))
+    )
+
+
+def compare_systems(summary_by_system: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    scored = {}
+    for system, summary in summary_by_system.items():
+        scored[system] = {
+            **summary,
+            "victory_score": compute_victory_score(summary),
+        }
+
+    ranking = sorted(
+        scored.items(),
+        key=lambda item: float(item[1].get("victory_score", 0.0)),
+        reverse=True,
+    )
+
+    return {
+        "scored": scored,
+        "ranking": [name for name, _ in ranking],
+        "winner": ranking[0][0] if ranking else None,
     }

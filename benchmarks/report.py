@@ -8,6 +8,12 @@ from typing import Any
 def render_markdown_report(report: dict[str, Any]) -> str:
     lines = ["# NUMAX Benchmark Report", ""]
 
+    winner = report.get("winner")
+    ranking = report.get("ranking", [])
+    lines.append(f"**Winner:** {winner}")
+    lines.append(f"**Ranking:** {ranking}")
+    lines.append("")
+
     summary = report.get("summary", {})
     ordered_systems = sorted(summary.keys())
 

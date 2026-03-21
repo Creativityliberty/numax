@@ -126,7 +126,10 @@ def run_numax_scenario(scenario: dict[str, Any]) -> dict[str, Any]:
         _simulate_provider_failure(state, scenario)
 
     if not state.runtime.degraded:
-        final_state = graph.run(start="intent_router", state=state)
+        try:
+            final_state = graph.run(start="intent_router", state=state)
+        except Exception:
+            final_state = state
     else:
         final_state = state
 

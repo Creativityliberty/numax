@@ -3,7 +3,7 @@ from __future__ import annotations
 from importlib import import_module
 from typing import Any
 
-from benchmarks.metrics import summarize_metrics
+from benchmarks.metrics import compare_systems, summarize_metrics
 from benchmarks.runtime_adapter import run_numax_scenario
 
 SCENARIO_IMPORTS = [
@@ -45,7 +45,6 @@ def run_benchmarks() -> dict[str, Any]:
 
     for scenario in scenarios:
         results.append(run_numax_scenario(scenario))
-
         for baseline in baselines:
             results.append(baseline.run_baseline(scenario))
 
@@ -54,8 +53,11 @@ def run_benchmarks() -> dict[str, Any]:
         by_system.setdefault(row["system"], []).append(row)
 
     summary = {system: summarize_metrics(rows) for system, rows in by_system.items()}
+    comparison = compare_systems(summary)
 
     return {
         "results": results,
-        "summary": summary,
+        "summary": comparison["scored"],
+        "ranking": comparison["ranking"],
+        "winner": comparison["winner"],
     }
