@@ -25,7 +25,7 @@
         }
       },
       "artifact": {
-        "artifact_id": "e5a73782-5240-4f74-8ad3-1247afbdc52d",
+        "artifact_id": "b4bd7d72-db1f-4ad7-bdb8-0fd99e40b5d5",
         "artifact_type": "summary",
         "title": "Benchmark Artifact",
         "content": "[mock-large] mock completion for: Search and explain the memory mechanisms of NUMAX, then produce a structured summary artifact.",
@@ -38,7 +38,7 @@
           "style_acceptance": 0.8
         },
         "trace": {
-          "run_id": "616ac7ac-43c0-4065-a435-2fb2772aa621",
+          "run_id": "8c3bb10b-0c1e-493c-9a0b-7f3ef057c365",
           "flow_name": "artifact_output",
           "source_ids": [],
           "model_ids": [

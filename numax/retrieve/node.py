@@ -1,26 +1,25 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Dict
 
 from numax.core.node import NumaxNode
 from numax.core.state import NumaxState
+from numax.learning.retrieval_ranker import rerank_results
 from numax.retrieve.engine import SimpleRetrievalEngine
+
 
 DEFAULT_DOCUMENTS = [
     {
         "id": "numax_intro",
-        "text": "NUMAX is a governed agentic cortex designed "
-        "to transform intent into structured artifacts.",
+        "text": "NUMAX is a governed agentic cortex designed to transform intent into structured artifacts.",
     },
     {
         "id": "numax_memory",
-        "text": "NUMAX includes working memory, episodic memory, "
-        "semantic memory and continuity mechanisms.",
+        "text": "NUMAX includes working memory, episodic memory, semantic memory and continuity mechanisms.",
     },
     {
         "id": "numax_runtime",
-        "text": "NUMAX uses runtime policies, model routing, "
-        "budget guards and fallback strategies.",
+        "text": "NUMAX uses runtime policies, model routing, budget guards and fallback strategies.",
     },
 ]
 
@@ -28,39 +27,37 @@ DEFAULT_DOCUMENTS = [
 class RetrieveNode(NumaxNode):
     name = "retrieve"
 
-    def prep(self, state: NumaxState) -> dict[str, Any]:
-        payload = {
-            "query": state.observation.get("raw_input", ""),
-        }
+    def prep(self, state: NumaxState) -> Dict[str, Any]:
+        payload = {"query": state.observation.get("raw_input", "")}
         state.add_trace(self.name, "prep", "Retrieve payload prepared", **payload)
         return payload
 
-    def exec(self, payload: dict[str, Any]) -> dict[str, Any]:
+    def exec(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         engine = SimpleRetrievalEngine(DEFAULT_DOCUMENTS)
-        results = engine.search(query=payload["query"], top_k=3)
-        return {
-            "results": [
-                {
-                    "source_id": item.source_id,
-                    "text": item.text,
-                    "score": item.score,
-                }
-                for item in results
-            ]
-        }
+        results = engine.search(query=payload["query"], top_k=5)
+        rows = [
+            {
+                "source_id": item.source_id,
+                "text": item.text,
+                "score": item.score,
+            }
+            for item in results
+        ]
+        ranked = rerank_results(rows)
+        return {"results": ranked[:3]}
 
     def post(
         self,
         state: NumaxState,
-        payload: dict[str, Any],
-        result: dict[str, Any],
+        payload: Dict[str, Any],
+        result: Dict[str, Any],
     ) -> str:
         state.retrieved_context = result["results"]
 
         if state.retrieved_context:
             state.confidence.source_confidence = min(
                 1.0,
-                max(item["score"] for item in state.retrieved_context) / 3.0,
+                max(float(item["score"]) for item in state.retrieved_context) / 3.0,
             )
         else:
             state.confidence.source_confidence = 0.0
