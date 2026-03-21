@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from numax.tools.registry import Tool, ToolRegistry, ToolSpec
 from numax.tools.workspace_tools import WorkspaceTools
+from numax.recipes.apply import apply_recipe
 
 
 def echo_tool(text: str) -> dict:
@@ -106,6 +107,19 @@ def build_default_tool_registry() -> ToolRegistry:
                 tags=["workspace", "tests", "exec"],
             ),
             handler=ws.test,
+        )
+    )
+
+    registry.register(
+        Tool(
+            spec=ToolSpec(
+                name="recipes.apply",
+                description="Apply a predefined recipe to configure runtime posture and execution plan.",
+                risk_level="medium",
+                requires_confirmation=True,
+                tags=["recipes", "runtime", "workflow"],
+            ),
+            handler=lambda recipe_id, preview=True: apply_recipe(recipe_id, preview).execution_plan,
         )
     )
 

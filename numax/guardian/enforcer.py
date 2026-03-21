@@ -30,3 +30,31 @@ def enforce_sandbox_command(
             timeout_seconds=timeout_seconds,
         )
     )
+
+
+def enforce_external_subagent(
+    user_roles: list[str],
+    subagent_id: str,
+    mode: str,
+) -> dict[str, Any]:
+    if not has_permission(user_roles, "providers.use"):
+        return {
+            "ok": False,
+            "reason": "missing_permission:providers.use",
+            "subagent_id": subagent_id,
+        }
+
+    if mode in {"patch_proposal", "test_execution", "full_bounded"} and not has_permission(
+        user_roles, "jobs.run"
+    ):
+        return {
+            "ok": False,
+            "reason": "missing_permission:jobs.run",
+            "subagent_id": subagent_id,
+        }
+
+    return {
+        "ok": True,
+        "subagent_id": subagent_id,
+        "mode": mode,
+    }

@@ -109,6 +109,15 @@ class NumaxState(BaseModel):
     timeout_decision: dict[str, Any] = Field(default_factory=dict)
     runtime_resilience_status: str | None = None
 
+    # V2 Recipe state
+    active_recipe: str | None = None
+    recipe_history: list[str] = Field(default_factory=list)
+    recipe_apply_result: dict[str, Any] = Field(default_factory=dict)
+
+    # V2 External Subagent state
+    external_subagent_result: dict[str, Any] = Field(default_factory=dict)
+    external_subagent_history: list[dict[str, Any]] = Field(default_factory=list)
+
     trace: list[TraceEvent] = Field(default_factory=list)
 
     def add_trace(

@@ -27,6 +27,8 @@ from numax.flows.specification_loop import build_specification_loop_flow
 from numax.flows.improvement_loop import build_improvement_loop_flow
 from numax.flows.profile_apply import build_profile_apply_flow
 from numax.flows.runtime_resilience import build_runtime_resilience_flow
+from numax.flows.recipe_run import build_recipe_run_flow
+from numax.flows.external_subagent_run import build_external_subagent_run_flow
 from numax.health.startup_checks import run_startup_checks
 from numax.identity.runtime_identity import build_runtime_identity
 from numax.learning.critic_calibration import load_critic_policy
@@ -105,6 +107,12 @@ def run(
     elif flow == "runtime_resilience":
         graph = build_runtime_resilience_flow()
         start = "runtime_collect_events"
+    elif flow == "recipe_run":
+        graph = build_recipe_run_flow()
+        start = "recipe_apply"
+    elif flow == "external_subagent_run":
+        graph = build_external_subagent_run_flow()
+        start = "external_subagent"
     else:
         raise typer.BadParameter(f"Unsupported flow: {flow}")
 
@@ -532,6 +540,92 @@ def runtime_check(
             "event_buffer_status": final_state.event_buffer_status,
             "timeout_decision": final_state.timeout_decision,
             "runtime_resilience_status": final_state.runtime_resilience_status,
+            "next_recommended_action": final_state.next_recommended_action,
+        }
+    )
+
+
+@app.command("recipes-list")
+def recipes_list() -> None:
+    from numax.recipes.registry import build_default_recipe_registry
+    registry = build_default_recipe_registry()
+    for recipe_id in registry.list_ids():
+        recipe = registry.get(recipe_id)
+        typer.echo(f"{recipe.recipe_id} - {recipe.title} -> flow={recipe.flow}")
+
+
+@app.command("recipe-apply")
+def recipe_apply_cmd(
+    recipe_id: str = typer.Option(..., help="Recipe identifier"),
+    preview: bool = typer.Option(True, help="Preview only"),
+) -> None:
+    from numax.recipes.apply import apply_recipe
+    result = apply_recipe(recipe_id=recipe_id, preview=preview)
+    typer.echo(
+        {
+            "ok": result.ok,
+            "recipe_id": result.recipe_id,
+            "execution_plan": result.execution_plan,
+            "notes": result.notes,
+        }
+    )
+
+
+@app.command("recipe-run")
+def recipe_run_cmd(
+    recipe_id: str = typer.Option(..., help="Recipe identifier"),
+    preview: bool = typer.Option(True, help="Preview only"),
+) -> None:
+    state = NumaxState(
+        observation={
+            "recipe_id": recipe_id,
+            "recipe_preview": preview,
+        }
+    )
+    state.runtime.run_id = str(uuid.uuid4())
+
+    graph = build_recipe_run_flow()
+    final_state = graph.run(start="recipe_apply", state=state)
+
+    typer.echo(
+        {
+            "active_recipe": final_state.active_recipe,
+            "recipe_apply_result": final_state.recipe_apply_result,
+            "next_recommended_action": final_state.next_recommended_action,
+            "execution_plan": final_state.world_state.get("recipe_execution_plan"),
+        }
+    )
+
+
+@app.command("external-subagents-list")
+def external_subagents_list() -> None:
+    from numax.subagents.external import build_default_external_subagent_registry
+    registry = build_default_external_subagent_registry()
+    typer.echo(registry.list_ids())
+
+
+@app.command("external-subagent-run")
+def external_subagent_run_cmd(
+    subagent_id: str = typer.Option("mock_repo_worker", help="External subagent identifier"),
+    mode: str = typer.Option("read_only", help="Invocation mode"),
+    prompt: str = typer.Option("Inspect the repo task", help="Task prompt"),
+) -> None:
+    state = NumaxState(
+        observation={
+            "raw_input": prompt,
+            "external_subagent_id": subagent_id,
+            "external_subagent_mode": mode,
+            "user_roles": ["admin"],
+        }
+    )
+    state.runtime.run_id = str(uuid.uuid4())
+
+    graph = build_external_subagent_run_flow()
+    final_state = graph.run(start="external_subagent", state=state)
+
+    typer.echo(
+        {
+            "external_subagent_result": final_state.external_subagent_result,
             "next_recommended_action": final_state.next_recommended_action,
         }
     )
