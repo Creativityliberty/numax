@@ -229,5 +229,45 @@ def store_backend() -> None:
     typer.echo(type(store).__name__)
 
 
+@app.command("jobs-list")
+def jobs_list() -> None:
+    from numax.jobs.repo import JobRepository
+    from numax.storage.bootstrap import build_default_store
+
+    repo = JobRepository(build_default_store())
+    typer.echo(repo.list_all())
+
+
+@app.command("spans-tail")
+def spans_tail() -> None:
+    from pathlib import Path
+
+    path = Path("data/traces/spans.jsonl")
+    if not path.exists():
+        typer.echo([])
+        return
+    lines = path.read_text(encoding="utf-8").splitlines()[-10:]
+    typer.echo(lines)
+
+
+@app.command("whoami-local")
+def whoami_local() -> None:
+    from numax.auth.context import build_local_admin_context
+
+    typer.echo(build_local_admin_context())
+
+
+@app.command("sandbox-echo")
+def sandbox_echo(message: str = typer.Option("hello")) -> None:
+    from numax.guardian.enforcer import enforce_sandbox_command
+
+    typer.echo(
+        enforce_sandbox_command(
+            user_roles=["admin"],
+            command=["echo", message],
+        )
+    )
+
+
 if __name__ == "__main__":
     app()
