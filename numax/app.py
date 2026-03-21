@@ -22,6 +22,8 @@ from numax.flows.workspace_analysis import build_workspace_analysis_flow
 from numax.flows.workspace_search import build_workspace_search_flow
 from numax.flows.code_change_loop import build_code_change_loop_flow
 from numax.flows.repo_repair import build_repo_repair_flow
+from numax.flows.subagent_review import build_subagent_review_flow
+from numax.flows.specification_loop import build_specification_loop_flow
 from numax.health.startup_checks import run_startup_checks
 from numax.identity.runtime_identity import build_runtime_identity
 from numax.learning.critic_calibration import load_critic_policy
@@ -85,6 +87,12 @@ def run(
     elif flow == "repo_repair":
         graph = build_repo_repair_flow()
         start = "workspace_open"
+    elif flow == "subagent_review":
+        graph = build_subagent_review_flow()
+        start = "subagent_orchestrate"
+    elif flow == "specification_loop":
+        graph = build_specification_loop_flow()
+        start = "intent_spec"
     else:
         raise typer.BadParameter(f"Unsupported flow: {flow}")
 
@@ -366,6 +374,58 @@ def workspace_repair(
             "change_scope": final_state.change_scope,
             "last_failure": final_state.last_failure,
             "next_recommended_action": final_state.next_recommended_action,
+        }
+    )
+
+
+@app.command("subagent-review")
+def subagent_review(
+    path: str = typer.Option(".", help="Workspace path"),
+    query: str = typer.Option("", help="Optional search query"),
+) -> None:
+    state = NumaxState(
+        observation={
+            "workspace_path": path,
+            "search_query": query,
+        }
+    )
+    state.runtime.run_id = str(uuid.uuid4())
+
+    graph = build_subagent_review_flow()
+    final_state = graph.run(start="subagent_orchestrate", state=state)
+
+    typer.echo(
+        {
+            "active_subagent": final_state.active_subagent,
+            "subagent_plan": final_state.subagent_plan,
+            "subagent_notes": final_state.subagent_notes,
+            "next_recommended_action": final_state.next_recommended_action,
+        }
+    )
+
+
+@app.command("spec-run")
+def spec_run(
+    prompt: str = typer.Option(..., help="Raw task input"),
+) -> None:
+    state = NumaxState(
+        observation={
+            "raw_input": prompt,
+        }
+    )
+    state.runtime.run_id = str(uuid.uuid4())
+
+    graph = build_specification_loop_flow()
+    final_state = graph.run(start="intent_spec", state=state)
+
+    typer.echo(
+        {
+            "intent_spec": final_state.intent_spec,
+            "assumptions": final_state.assumptions,
+            "work_spec": final_state.work_spec,
+            "spec_status": final_state.spec_status,
+            "next_recommended_action": final_state.next_recommended_action,
+            "validation": final_state.world_state.get("spec_validation"),
         }
     )
 

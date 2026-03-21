@@ -79,6 +79,18 @@ class NumaxState(BaseModel):
     code_review: dict[str, Any] = Field(default_factory=dict)
     patch_risk: str | None = None
     change_scope: str | None = None
+
+    # V2 Subagent state
+    active_subagent: str | None = None
+    subagent_notes: list[str] = Field(default_factory=list)
+    subagent_plan: dict[str, Any] = Field(default_factory=dict)
+
+    # V2 Spec state
+    intent_spec: dict[str, Any] = Field(default_factory=dict)
+    work_spec: dict[str, Any] = Field(default_factory=dict)
+    assumptions: dict[str, Any] = Field(default_factory=dict)
+    acceptance_criteria: list[str] = Field(default_factory=list)
+    spec_status: str | None = None
     trace: list[TraceEvent] = Field(default_factory=list)
 
     def add_trace(

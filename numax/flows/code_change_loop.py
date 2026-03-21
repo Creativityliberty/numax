@@ -13,6 +13,9 @@ from numax.workspace.change_nodes import (
 from numax.workspace.code_critic_nodes import WorkspaceCodeCriticNode
 
 
+from numax.subagents.nodes import SubagentOrchestrateNode
+
+
 def build_code_change_loop_flow() -> NumaxGraph:
     graph = NumaxGraph(name="code_change_loop")
 
@@ -24,6 +27,7 @@ def build_code_change_loop_flow() -> NumaxGraph:
     apply_node = WorkspacePatchApplyNode()
     test_node = WorkspaceRunTestsNode()
     critic_node = WorkspaceCodeCriticNode()
+    subagent_node = SubagentOrchestrateNode()
 
     for node in [
         open_node,
@@ -34,6 +38,7 @@ def build_code_change_loop_flow() -> NumaxGraph:
         apply_node,
         test_node,
         critic_node,
+        subagent_node,
     ]:
         graph.add_node(node)
 
@@ -44,6 +49,7 @@ def build_code_change_loop_flow() -> NumaxGraph:
     graph.add_edge("workspace_patch_proposal", "apply", "workspace_patch_apply")
     graph.add_edge("workspace_patch_apply", "test", "workspace_run_tests")
     graph.add_edge("workspace_run_tests", "done", "workspace_code_critic")
-    graph.add_edge("workspace_code_critic", "done", None)
+    graph.add_edge("workspace_code_critic", "done", "subagent_orchestrate")
+    graph.add_edge("subagent_orchestrate", "done", None)
 
     return graph
