@@ -196,21 +196,21 @@ Légende : ✅ Présent | 🟡 Partiel | ❌ Manquant
 | **Confidence model** | ✅ | compréhension/source/output/safety | meilleure agrégation |
 | **Kill switch** | ✅ | kill switch gouverné | intégration runtime distribué |
 | **Tool registry** | ✅ | outils typés avec risque | surface outillage plus riche |
-| **Sandbox** | 🟡 | sandbox logique | vraie isolation système |
+| **Sandbox** | ✅ | isolation d'exécution, sandbox logique | intégration containers |
 | **Memory continuity** | ✅ | save/load continuité | backend partagé |
 | **Memory promotion** | ✅ | working → episodic → semantic | scoring plus intelligent |
 | **Memory forgetting** | ✅ | oubli contrôlé | oubli contextuel plus fin |
 | **Memory consolid.** | ✅ | consolidation de patterns | consolidation sémantique |
 | **Artifact schema** | ✅ | types, qualité, trace, statut | plus de types métier |
 | **Artifact validation** | ✅ | validation minimale | validation métier avancée |
-| **Real providers** | 🟡 | OpenAI / Anthropic / Google / Ollama | async, streaming, coûts réels |
+| **Real providers** | ✅ | OpenAI / Anthropic / Google / Ollama async | streaming natif complet |
 | **Provider fallback** | ✅ | fallback logique dans answer | fallback prod plus avancé |
 | **Skills journal** | ✅ | journal JSON local | migrations/versioning plus forts |
 | **Skill replay** | ✅ | replay journal/explicite | replay d’effets concrets |
 | **Rollback** | ✅ | last_known_good | rollback plus transactionnel |
 | **Benchmark scen.** | ✅ | scénarios clés | couverture plus large |
 | **Victory score** | ✅ | score agrégé + ranking | justification par domaine |
-| **FastAPI server** | ✅ | routes de base | auth, RBAC, jobs |
+| **FastAPI server** | ✅ | routes de base, auth, RBAC, admin, jobs | - |
 | **MCP minimal** | 🟡 | tools/list, tools/call | surface plus complète |
 | **Traces** | ✅ | JSONL par run | OTel / spans |
 | **Diagnostics** | ✅ | diagnostics de session | dashboards |
@@ -229,16 +229,16 @@ Légende : ✅ Présent | 🟡 Partiel | ❌ Manquant
 
 ### J+60 — Monter en maturité opératoire
 **Objectif** : Passer de système local avancé à runtime prêt à sortir du labo.
-* **Providers async / streaming** : appels async natifs, policies retry/timeout claires.
-* **Persistance plus sérieuse** : backend local durable plus propre, préparation Redis/SQLite/Postgres.
-* **Observabilité standardisée** : préparer OTel, corrélation run/session/provider/model.
-* **Artefacts plus métier** : scoring par type, acceptance criteria plus forts.
+* ✅ **Providers async / streaming** : appels async natifs, policies retry/timeout claires.
+* ✅ **Persistance plus sérieuse** : backend local durable SQLite, stores Redis/Postgres init.
+* ✅ **Observabilité standardisée** : OTel natif, manager de spans, export traces structurées.
+* 🟡 **Artefacts plus métier** : scoring par type, acceptance criteria plus forts.
 
 ### J+90 — Préparer le Scale / Prod
 **Objectif** : Passer de runtime local puissant à noyau plateforme scalable.
-* **Jobs et tâches longues** : queue, workers, reprise de tâches, supervision des runs longs.
-* **Sécurité réelle** : sandbox système, secret handling, protection injection.
-* **Multi-user / RBAC** : auth, rôles, ownership, quotas, isolation de session.
+* ✅ **Jobs et tâches longues** : architecture Repo/Service/Worker locale en place.
+* ✅ **Sécurité réelle** : module Guardian (isolation sandbox, kill switches, RBAC).
+* ✅ **Multi-user / RBAC** : modèle UserIdentity complet (Admin/Viewer, middlewares).
 * **Mémoire partagée** : backend commun, continuité multi-instance, mémoire sémantique.
 
 ---
