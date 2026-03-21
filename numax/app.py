@@ -24,6 +24,7 @@ from numax.flows.code_change_loop import build_code_change_loop_flow
 from numax.flows.repo_repair import build_repo_repair_flow
 from numax.flows.subagent_review import build_subagent_review_flow
 from numax.flows.specification_loop import build_specification_loop_flow
+from numax.flows.improvement_loop import build_improvement_loop_flow
 from numax.health.startup_checks import run_startup_checks
 from numax.identity.runtime_identity import build_runtime_identity
 from numax.learning.critic_calibration import load_critic_policy
@@ -93,6 +94,9 @@ def run(
     elif flow == "specification_loop":
         graph = build_specification_loop_flow()
         start = "intent_spec"
+    elif flow == "improvement_loop":
+        graph = build_improvement_loop_flow()
+        start = "improvement_loop"
     else:
         raise typer.BadParameter(f"Unsupported flow: {flow}")
 
@@ -426,6 +430,46 @@ def spec_run(
             "spec_status": final_state.spec_status,
             "next_recommended_action": final_state.next_recommended_action,
             "validation": final_state.world_state.get("spec_validation"),
+        }
+    )
+
+
+@app.command("improve-run")
+def improve_run(
+    safety_confidence: float = typer.Option(1.0, help="Safety confidence"),
+    degraded: bool = typer.Option(False, help="Whether runtime is degraded"),
+    retries: int = typer.Option(0, help="Current retry count"),
+    test_failed: bool = typer.Option(False, help="Whether the latest test failed"),
+    review_decision: str = typer.Option("", help="Code review decision"),
+) -> None:
+    state = NumaxState()
+    state.runtime.run_id = str(uuid.uuid4())
+    state.runtime.degraded = degraded
+    state.runtime.retries = retries
+    state.confidence.safety_confidence = safety_confidence
+
+    if test_failed:
+        state.last_test_run = {"ok": False}
+        state.last_failure = {"kind": "test_failure"}
+
+    if review_decision:
+        state.world_state["code_review"] = {
+            "decision": review_decision,
+            "risk": "medium",
+            "scope": "medium",
+            "notes": ["Injected review decision from CLI."],
+        }
+
+    graph = build_improvement_loop_flow()
+    final_state = graph.run(start="improvement_loop", state=state)
+
+    typer.echo(
+        {
+            "improvement_suggestions": final_state.improvement_suggestions,
+            "retry_decision": final_state.retry_decision,
+            "mutation_decision": final_state.mutation_decision,
+            "improvement_status": final_state.improvement_status,
+            "next_recommended_action": final_state.next_recommended_action,
         }
     )
 

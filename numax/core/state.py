@@ -22,6 +22,7 @@ class RuntimeState(BaseModel):
     owner: str | None = None
     run_id: str | None = None
     retries: int = 0
+    max_retries: int = 3
     degraded: bool = False
 
 
@@ -91,6 +92,13 @@ class NumaxState(BaseModel):
     assumptions: dict[str, Any] = Field(default_factory=dict)
     acceptance_criteria: list[str] = Field(default_factory=list)
     spec_status: str | None = None
+
+    # V2 Improvement state
+    improvement_suggestions: list[dict[str, Any]] = Field(default_factory=list)
+    retry_decision: dict[str, Any] = Field(default_factory=dict)
+    mutation_decision: dict[str, Any] = Field(default_factory=dict)
+    improvement_status: str | None = None
+
     trace: list[TraceEvent] = Field(default_factory=list)
 
     def add_trace(
