@@ -3,9 +3,9 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from numax.skills.effects import apply_effect
 from numax.skills.journal import current_installed_skills, load_skill_journal
 from numax.skills.registry import build_default_skill_registry
+from numax.skills.transactions import apply_skill_transaction
 
 
 @dataclass
@@ -27,10 +27,15 @@ def replay_skills(skill_ids: Iterable[str] | None = None) -> ReplayResult:
         applied = list(skill_ids)
         notes.append("Replayed from explicit skill list.")
 
+    all_ok = True
     for skill_id in applied:
         skill = registry.get(skill_id)
-        for effect in skill.effects:
-            result = apply_effect(effect)
-            notes.append(f"Replayed effect for {skill_id}: {result}")
+        tx = apply_skill_transaction(skill)
+        notes.extend(tx.notes)
+        if tx.ok:
+            notes.append(f"Replayed skill transactionally: {skill_id}")
+        else:
+            all_ok = False
+            notes.append(f"Replay failed for skill: {skill_id}")
 
-    return ReplayResult(ok=True, applied=applied, notes=notes)
+    return ReplayResult(ok=all_ok, applied=applied, notes=notes)
