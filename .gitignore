@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# Tool Caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Build
+build/
+dist/
+*.egg-info/
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Env / Local Config
+.env
+.env.local
+
+# Profiling
+.prof
+
+# OS
+.DS_Store
+
+# Data & Runtime State
+data/traces/*
+data/state/*
+data/artifacts/*
+!data/traces/.gitkeep
+!data/state/.gitkeep
+!data/artifacts/.gitkeep
