@@ -74,3 +74,27 @@ Développer `server/middleware/auth.py`. Gérer les accès aux tools et provider
 
 ### 15. Les Bundles NUMAX (Distributions)
 Packager le framework en `numax-core`, `numax-dev` et `numax-enterprise` avec des manifestes officiels.
+
+---
+
+## 📊 Tableau Priorisé : Le Plan de Frappe NUMAX V2
+
+| Phase | Catégorie | Élément | Objectif Stratégique |
+| :--- | :--- | :--- | :--- |
+| **🟢 MAINTENANT (Le Kit de Preuve)** | **Benchmarking** | `benchmarks/` | Prouver la valeur et la supériorité de l'architecture. |
+| **🟢 MAINTENANT** | **Documentation** | `docs/theory_of_victory.md` | Éviter l'effet cathédrale ; fixer la thèse. |
+| **🟢 MAINTENANT** | **Learning** | `learning/` (Router, Critic) | Permettre à NUMAX de progresser via logs et scoring. |
+| **🟢 MAINTENANT** | **Memory** | Promotion & Consolidation | Atteindre la continuité profonde (Working -> Semantic). |
+| **🟢 MAINTENANT** | **Mutation** | `release/rollback.py` | Contrôler l'évolution des skills sans désintégration. |
+| | | | |
+| **🟡 ENSUITE (La Robustesse Prod)** | **Documentation** | `docs/deterministic_vs_learned.md` | Figer ce qui est gouverné vs ce qui est appris. |
+| **🟡 ENSUITE** | **Providers** | OpenAI, Anthropic, Google natif | Quitter les mocks ; obtenir coûts et métriques réels. |
+| **🟡 ENSUITE** | **Sécurité** | Prompt Injection, OS Sandbox | Protéger les exécutions hostiles (Sécurité Réelle). |
+| **🟡 ENSUITE** | **Persistance** | `storage/sqlite.py` / DBs | Abstraction de base de données (Traces, Sessions). |
+| **🟡 ENSUITE** | **Testing** | Chaos Testing (Resilience) | Vérifier le comportement aux limites (budget overflow, fail). |
+| | | | |
+| **⚪ PLUS TARD (La Plateforme Scale)**| **Observabilité** | OpenTelemetry, Heatmaps | Diagnostiquer visuellement les flows complexes. |
+| **⚪ PLUS TARD** | **Evaluation** | `artifacts/evaluators.py` | Juge automatique pour accepter/refuser les artefacts. |
+| **⚪ PLUS TARD** | **Scale** | `workers/` (Async Jobs) | Job queue pour des recherches agentiques de 24h. |
+| **⚪ PLUS TARD** | **Gouvernance** | `rbac/`, `auth/` | Contrôle multi-agents et multi-utilisateurs. |
+| **⚪ PLUS TARD** | **Release** | Numax Bundles | Distribution produit (`numax-enterprise`, etc.). |
