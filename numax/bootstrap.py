@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from numax.configs.loader import load_config, get_provider_config, get_routing_config
+from numax.configs.loader import get_provider_config, get_routing_config, load_config
 from numax.models.catalog import ModelCatalog, ModelSpec
 from numax.models.resolver import ModelResolver, RuntimePolicy
 from numax.providers.anthropic import AnthropicProvider

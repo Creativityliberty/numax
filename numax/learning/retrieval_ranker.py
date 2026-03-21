@@ -7,7 +7,7 @@ from typing import Any
 RANKER_POLICY_PATH = Path("data/state/retrieval_ranker_feedback.json")
 RANKER_POLICY_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-DEFAULT_RANKER_POLICY = {
+DEFAULT_RANKER_POLICY: dict[str, Any] = {
     "source_boosts": {},
 }
 

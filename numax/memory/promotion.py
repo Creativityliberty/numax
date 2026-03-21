@@ -4,7 +4,7 @@ from typing import Any
 
 
 def promote_working_to_episodic(state) -> list[dict]:
-    working = state.memory.setdefault("working", {})
+    state.memory.setdefault("working", {})
     episodic = state.memory.setdefault("episodic", [])
 
     promoted: list[dict] = []

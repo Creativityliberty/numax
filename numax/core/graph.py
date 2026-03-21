@@ -27,7 +27,7 @@ class NumaxGraph:
             raise ValueError(f"Unknown start node: {start}")
 
         state.runtime.flow_name = self.name
-        current = start
+        current: str | None = start
 
         while current is not None:
             node = self.nodes[current]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from typing import Any
 
 from numax.providers.anthropic import AnthropicProvider
 from numax.providers.google import GoogleProvider
@@ -24,7 +25,7 @@ def detect_enabled_providers() -> list[str]:
 
 
 def build_auto_providers() -> list:
-    providers = []
+    providers: list[Any] = []
     names = detect_enabled_providers()
 
     if "openai" in names:

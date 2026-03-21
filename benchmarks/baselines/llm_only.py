@@ -6,7 +6,8 @@ from typing import Any
 def get_baseline() -> dict:
     return {
         "baseline_id": "llm_only",
-        "description": "Single LLM-style direct answer baseline without retrieval/planning/artifact governance.",
+        "description": "Single LLM-style direct answer baseline "
+        "without retrieval/planning/artifact governance.",
     }
 
 

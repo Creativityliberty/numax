@@ -18,5 +18,9 @@ def uninstall_skill(skill_id: str) -> SkillUninstallResult:
     return SkillUninstallResult(
         ok=True,
         skill_id=skill_id,
-        notes=[f"Skill '{skill_id}' uninstall persisted to local JSON journal."],
+        notes=[
+            f"Skill '{skill_id}' uninstall persisted to local JSON journal.",
+            "Note: uninstall currently updates journal state; "
+            "effect reversal policy may be added later.",
+        ],
     )

@@ -13,7 +13,8 @@ def get_scenario() -> dict:
         "inject_retrieved_context": [
             {
                 "source_id": "memory_resume_seed",
-                "text": "Previous session discussed working, episodic and semantic memory for NUMAX.",
+                "text": "Previous session discussed working, episodic and "
+                "semantic memory for NUMAX.",
                 "score": 2.0,
             }
         ],

@@ -78,7 +78,7 @@ def _apply_mutation_pipeline(scenario: dict[str, Any]) -> dict[str, Any]:
     notes = []
 
     if scenario.get("mutation_scenario"):
-        replay_result = replay_skills(["core_memory", "governance_guard"])
+        replay_result = replay_skills(["memory_plus", "critic_strict"])
         replay_ok = replay_result.ok
         notes.extend(replay_result.notes)
 

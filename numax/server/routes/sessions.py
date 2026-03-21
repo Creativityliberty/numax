@@ -1,26 +1,21 @@
 from __future__ import annotations
 
-import json
 import uuid
-from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-router = APIRouter()
+from numax.storage.bootstrap import build_default_store
+from numax.storage.repos import SessionRepository
 
-SESSIONS_DIR = Path("data/state/sessions")
-SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
+router = APIRouter()
+repo = SessionRepository(build_default_store())
 
 
 class CreateSessionRequest(BaseModel):
     goal: dict[str, Any] = Field(default_factory=dict)
     metadata: dict[str, Any] = Field(default_factory=dict)
-
-
-def _session_path(session_id: str) -> Path:
-    return SESSIONS_DIR / f"{session_id}.json"
 
 
 @router.post("/")
@@ -32,21 +27,19 @@ def create_session(request: CreateSessionRequest) -> dict:
         "metadata": request.metadata,
         "status": "created",
     }
-
-    _session_path(session_id).write_text(
-        json.dumps(payload, indent=2),
-        encoding="utf-8",
-    )
+    repo.save(session_id, payload)
     return payload
 
 
 @router.get("/")
 def list_sessions() -> list[dict]:
+    keys = [k for k in repo.store.list_keys() if k.startswith("sessions/")]
     rows = []
-    for file in SESSIONS_DIR.glob("*.json"):
+    for k in keys:
         try:
-            data = json.loads(file.read_text(encoding="utf-8"))
-            rows.append(data)
+            val = repo.store.get(k)
+            if val:
+                rows.append(val)
         except Exception:
             continue
     return rows
@@ -54,19 +47,18 @@ def list_sessions() -> list[dict]:
 
 @router.get("/{session_id}")
 def get_session(session_id: str) -> dict:
-    path = _session_path(session_id)
-    if not path.exists():
+    data = repo.get(session_id)
+    if not data:
         raise HTTPException(status_code=404, detail="Session not found")
-    return json.loads(path.read_text(encoding="utf-8"))
+    return data
 
 
 @router.get("/{session_id}/diagnostics")
 def get_session_diagnostics(session_id: str) -> dict:
-    path = _session_path(session_id)
-    if not path.exists():
+    payload = repo.get(session_id)
+    if not payload:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    payload = json.loads(path.read_text(encoding="utf-8"))
     return {
         "session_id": payload["session_id"],
         "status": payload.get("status"),

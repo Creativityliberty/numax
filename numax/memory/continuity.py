@@ -26,7 +26,7 @@ def load_continuity_state(path: str) -> dict | None:
     target = Path(path)
     if not target.exists():
         return None
-    return json.loads(target.read_text(encoding="utf-8"))
+    return json.loads(target.read_text(encoding="utf-8"))  # type: ignore
 
 
 def restore_continuity(state: NumaxState, path: str) -> NumaxState:

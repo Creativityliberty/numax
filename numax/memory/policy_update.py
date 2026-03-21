@@ -14,4 +14,4 @@ def update_memory_policy_from_history(memory_store: dict[str, Any]) -> dict[str,
     policy["history_successes"] = successes
     policy["prefer_conservative_promotion"] = failures > successes
 
-    return policy
+    return policy  # type: ignore

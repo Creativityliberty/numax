@@ -112,7 +112,8 @@ def tools_list() -> None:
     registry = build_default_tool_registry()
     for spec in registry.list_tools():
         typer.echo(
-            f"{spec.name} risk={spec.risk_level} confirm={spec.requires_confirmation} tags={spec.tags}"
+            f"{spec.name} risk={spec.risk_level} "
+            f"confirm={spec.requires_confirmation} tags={spec.tags}"
         )
 
 
@@ -181,6 +182,35 @@ def serve(
     port: int = typer.Option(8000),
 ) -> None:
     uvicorn.run("numax.server.app:app", host=host, port=port, reload=True)
+
+
+@app.command("skills-list")
+def skills_list() -> None:
+    from numax.skills.registry import build_default_skill_registry
+
+    registry = build_default_skill_registry()
+    for skill_id in registry.list_ids():
+        skill = registry.get(skill_id)
+        typer.echo(f"- {skill_id} (v{skill.version}): {skill.title}")
+
+
+@app.command("skill-apply")
+def skill_apply_cmd(
+    skill_id: str = typer.Option(...),
+    preview: bool = typer.Option(True),
+) -> None:
+    from numax.skills.apply import apply_skill
+
+    result = apply_skill(skill_id, preview=preview)
+    typer.echo(f"OK: {result.ok} Preview: {result.preview} Notes: {result.notes}")
+
+
+@app.command("skill-replay")
+def skill_replay_cmd() -> None:
+    from numax.skills.replay import replay_skills
+
+    result = replay_skills()
+    typer.echo(f"OK: {result.ok} Notes: {result.notes}")
 
 
 if __name__ == "__main__":

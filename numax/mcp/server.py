@@ -38,4 +38,5 @@ def execute_numax_plan(prompt: str) -> str:
 
 
 if __name__ == "__main__":
-    mcp.run_stdio_async()
+    import asyncio
+    asyncio.run(mcp.run_stdio_async())

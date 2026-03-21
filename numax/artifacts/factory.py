@@ -3,13 +3,14 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
-from numax.artifacts.schema import Artifact
+from numax.artifacts.schema import Artifact, ArtifactTrace
+from numax.artifacts.types import ArtifactType
 from numax.core.state import NumaxState
 
 
 def build_artifact_from_state(
     state: NumaxState,
-    artifact_type: str = "summary",
+    artifact_type: ArtifactType = "summary",
     title: str = "NUMAX Output",
 ) -> Artifact:
     source_ids: list[str] = []
@@ -32,11 +33,11 @@ def build_artifact_from_state(
         artifact_type=artifact_type,
         title=title,
         content=content,
-        trace={
-            "run_id": state.runtime.run_id,
-            "flow_name": state.runtime.flow_name,
-            "source_ids": source_ids,
-            "model_ids": model_ids,
-        },
+        trace=ArtifactTrace(
+            run_id=state.runtime.run_id,
+            flow_name=state.runtime.flow_name,
+            source_ids=source_ids,
+            model_ids=model_ids,
+        ),
     )
     return artifact

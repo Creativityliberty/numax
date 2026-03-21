@@ -8,7 +8,7 @@ SKILL_JOURNAL_PATH = Path("data/state/skills_journal.json")
 SKILL_JOURNAL_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 
-DEFAULT_JOURNAL = {
+DEFAULT_JOURNAL: dict[str, Any] = {
     "entries": [],
     "last_known_good": [],
 }

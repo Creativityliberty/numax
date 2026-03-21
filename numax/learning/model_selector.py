@@ -9,7 +9,7 @@ from numax.bootstrap import build_model_catalog, build_model_resolver
 MODEL_SELECTOR_PATH = Path("data/state/model_selector_feedback.json")
 MODEL_SELECTOR_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-DEFAULT_SELECTOR_POLICY = {
+DEFAULT_SELECTOR_POLICY: dict[str, Any] = {
     "prefer_by_role": {},
     "avoid_models": [],
 }

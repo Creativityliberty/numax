@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 from numax.core.node import NumaxNode
 from numax.core.state import CritiqueState, NumaxState
@@ -11,7 +11,7 @@ from numax.learning.critic_calibration import calibrate_confidence
 class BasicCriticNode(NumaxNode):
     name = "basic_critic"
 
-    def prep(self, state: NumaxState) -> Dict[str, Any]:
+    def prep(self, state: NumaxState) -> dict[str, Any]:
         payload = {
             "candidate_output": state.candidate_output,
             "safety_confidence": state.confidence.safety_confidence,
@@ -20,7 +20,7 @@ class BasicCriticNode(NumaxNode):
         state.add_trace(self.name, "prep", "Critic payload prepared")
         return payload
 
-    def exec(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def exec(self, payload: dict[str, Any]) -> dict[str, Any]:
         notes = []
         ok = True
 
@@ -47,8 +47,8 @@ class BasicCriticNode(NumaxNode):
     def post(
         self,
         state: NumaxState,
-        payload: Dict[str, Any],
-        result: Dict[str, Any],
+        payload: dict[str, Any],
+        result: dict[str, Any],
     ) -> str:
         state.critique = CritiqueState(
             ok=result["ok"],

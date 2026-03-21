@@ -6,7 +6,8 @@ from typing import Any
 def get_baseline() -> dict:
     return {
         "baseline_id": "llm_tools_memory",
-        "description": "LLM plus tools plus light memory baseline without full mutation/governance stack.",
+        "description": "LLM plus tools plus light memory baseline "
+        "without full mutation/governance stack.",
     }
 
 

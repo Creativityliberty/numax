@@ -42,6 +42,9 @@ def load_config() -> dict[str, Any]:
     ]:
         config = _deep_merge(config, _read_yaml(CONFIG_DIR / filename))
 
+    from numax.skills.runtime_overrides import load_runtime_overrides
+    config = _deep_merge(config, load_runtime_overrides())
+
     return config
 
 
