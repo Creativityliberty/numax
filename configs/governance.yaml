@@ -1,0 +1,7 @@
+governance:
+  min_execution_confidence: 0.6
+  min_validation_confidence: 0.8
+  min_safety_confidence: 0.6
+
+  mutation_mode: MUTATION_FORBIDDEN
+  tool_confirmation_required: true

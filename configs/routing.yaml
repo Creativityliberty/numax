@@ -1,0 +1,10 @@
+models:
+  primary: mock:mock-large
+  light: mock:mock-small
+  critic: mock:mock-large
+
+  fallbacks:
+    primary:
+      - mock:mock-small
+    critic:
+      - mock:mock-small

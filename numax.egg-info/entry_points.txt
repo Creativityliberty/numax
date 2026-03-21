@@ -1,0 +1,2 @@
+[console_scripts]
+numax = numax.app:app

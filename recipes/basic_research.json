@@ -1,0 +1,9 @@
+{
+  "recipe_id": "basic_research",
+  "name": "Basic Research",
+  "description": "Run a planning-oriented retrieval flow.",
+  "flow": "planning_execution",
+  "defaults": {
+    "autonomy_mode": "ASSISTED"
+  }
+}

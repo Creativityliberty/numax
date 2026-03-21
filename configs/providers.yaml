@@ -1,0 +1,15 @@
+providers:
+  mock:
+    enabled: true
+
+  openai:
+    enabled: false
+
+  anthropic:
+    enabled: false
+
+  google:
+    enabled: true
+
+  ollama:
+    enabled: false

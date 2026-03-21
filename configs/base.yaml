@@ -1,0 +1,19 @@
+app:
+  name: numax
+  env: dev
+  log_level: INFO
+
+runtime:
+  autonomy_mode: ASSISTED
+  degraded_mode_enabled: true
+  max_retries: 2
+
+memory:
+  persistence: sqlite
+  compact_context_threshold: 0.8
+
+paths:
+  data_dir: ./data
+  traces_dir: ./data/traces
+  state_dir: ./data/state
+  artifacts_dir: ./data/artifacts
