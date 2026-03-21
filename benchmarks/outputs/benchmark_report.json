@@ -25,7 +25,7 @@
         }
       },
       "artifact": {
-        "artifact_id": "0e2e8b16-7908-4c15-b4d4-b88f8f2ac937",
+        "artifact_id": "c554e792-65e7-42be-81b1-0b6ea62609db",
         "artifact_type": "summary",
         "title": "Benchmark Artifact",
         "content": "[mock-large] mock completion for: Search and explain the memory mechanisms of NUMAX, then produce a structured summary artifact.",
@@ -38,7 +38,7 @@
           "style_acceptance": 0.8
         },
         "trace": {
-          "run_id": "b83515c6-103c-4384-b7bf-5402cd9c3e14",
+          "run_id": "543247ef-d58d-4033-93ff-76e789b83820",
           "flow_name": "artifact_output",
           "source_ids": [],
           "model_ids": [
@@ -531,8 +531,10 @@
       },
       "mutation_notes": [
         "Replayed from explicit skill list.",
-        "Replayed skill: core_memory",
-        "Replayed skill: governance_guard",
+        "Applied effect: {'effect': 'set_config_value', 'ok': True}",
+        "Replayed skill transactionally: memory_plus",
+        "Applied effect: {'effect': 'set_critic_policy', 'ok': True}",
+        "Replayed skill transactionally: critic_strict",
         "Rollback restored last known good set: []"
       ]
     },

@@ -2,20 +2,28 @@
   "goal": {},
   "memory": {
     "working": {},
-    "continuity": {}
+    "continuity": {},
+    "tool_history": [
+      {
+        "tool": "provider.mock",
+        "model": "mock-large",
+        "ok": true,
+        "error": null
+      }
+    ]
   },
   "runtime": {
     "fsm_state": "LEARN",
     "flow_name": "artifact_output",
     "owner": null,
-    "run_id": "40e1d1c7-4a5a-4c04-8014-703401672327",
+    "run_id": "15c01adb-79e1-4ce1-b220-b2a8e88b2b12",
     "retries": 0,
     "degraded": false
   },
   "budget": {
     "max_tokens_total": 20000,
     "max_cost_usd": 1.0,
-    "tokens_used": 0,
+    "tokens_used": 10,
     "cost_used_usd": 0.0
   },
   "confidence": {

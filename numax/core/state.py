@@ -70,6 +70,12 @@ class NumaxState(BaseModel):
     runtime: RuntimeState = Field(default_factory=RuntimeState)
     budget: BudgetState = Field(default_factory=BudgetState)
     confidence: ConfidenceState = Field(default_factory=ConfidenceState)
+    active_workspace: dict[str, Any] = Field(default_factory=dict)
+    active_files: list[str] = Field(default_factory=list)
+    last_patch: dict[str, Any] = Field(default_factory=dict)
+    last_test_run: dict[str, Any] = Field(default_factory=dict)
+    last_failure: dict[str, Any] = Field(default_factory=dict)
+    next_recommended_action: str | None = None
     trace: list[TraceEvent] = Field(default_factory=list)
 
     def add_trace(

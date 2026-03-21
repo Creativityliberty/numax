@@ -18,6 +18,8 @@ from numax.flows.artifact_output import build_artifact_output_flow
 from numax.flows.basic_chat import build_basic_chat_flow
 from numax.flows.planning_execution import build_planning_execution_flow
 from numax.flows.retrieval_answer import build_retrieval_answer_flow
+from numax.flows.workspace_analysis import build_workspace_analysis_flow
+from numax.flows.workspace_search import build_workspace_search_flow
 from numax.health.startup_checks import run_startup_checks
 from numax.identity.runtime_identity import build_runtime_identity
 from numax.learning.critic_calibration import load_critic_policy
@@ -69,6 +71,12 @@ def run(
     elif flow == "artifact_output":
         graph = build_artifact_output_flow()
         start = "intent_router"
+    elif flow == "workspace_analysis":
+        graph = build_workspace_analysis_flow()
+        start = "workspace_open"
+    elif flow == "workspace_search":
+        graph = build_workspace_search_flow()
+        start = "workspace_open"
     else:
         raise typer.BadParameter(f"Unsupported flow: {flow}")
 
@@ -205,6 +213,16 @@ def skill_apply_cmd(
     typer.echo(f"OK: {result.ok} Preview: {result.preview} Notes: {result.notes}")
 
 
+@app.command("skill-uninstall")
+def skill_uninstall_cmd(
+    skill_id: str = typer.Option(...),
+) -> None:
+    from numax.skills.uninstall import uninstall_skill
+
+    result = uninstall_skill(skill_id)
+    typer.echo(f"OK: {result.ok} Notes: {result.notes}")
+
+
 @app.command("skill-replay")
 def skill_replay_cmd() -> None:
     from numax.skills.replay import replay_skills
@@ -267,6 +285,44 @@ def sandbox_echo(message: str = typer.Option("hello")) -> None:
             command=["echo", message],
         )
     )
+
+
+@app.command("workspace-scan")
+def workspace_scan(
+    path: str = typer.Option(".", help="Workspace path"),
+    project_name: str = typer.Option(None, help="Optional project name"),
+) -> None:
+    state = NumaxState(
+        observation={
+            "workspace_path": path,
+            "project_name": project_name,
+        }
+    )
+    state.runtime.run_id = str(uuid.uuid4())
+
+    graph = build_workspace_analysis_flow()
+    final_state = graph.run(start="workspace_open", state=state)
+
+    typer.echo(final_state.final_output)
+
+
+@app.command("workspace-search")
+def workspace_search(
+    path: str = typer.Option(".", help="Workspace path"),
+    query: str = typer.Option(..., help="Search query"),
+) -> None:
+    state = NumaxState(
+        observation={
+            "workspace_path": path,
+            "search_query": query,
+        }
+    )
+    state.runtime.run_id = str(uuid.uuid4())
+
+    graph = build_workspace_search_flow()
+    final_state = graph.run(start="workspace_open", state=state)
+
+    typer.echo(final_state.world_state.get("workspace_search"))
 
 
 if __name__ == "__main__":
