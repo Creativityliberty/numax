@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 REQUIRED_RECIPE_KEYS = {
     "recipe_id",
@@ -12,7 +12,7 @@ REQUIRED_RECIPE_KEYS = {
 }
 
 
-def load_recipe(name: str) -> Dict[str, Any]:
+def load_recipe(name: str) -> dict[str, Any]:
     """
     Charge et valide grossièrement une recipe.
     """
@@ -21,14 +21,16 @@ def load_recipe(name: str) -> Dict[str, Any]:
     # For this edit, I'll assume it's available in the context.
     # If RECIPES_DIR is not defined, the user needs to add it.
     # Example: RECIPES_DIR = Path("./recipes")
-    RECIPES_DIR = Path("./recipes") # Added a placeholder for RECIPES_DIR to make the code syntactically correct.
-                                   # The user should replace this with their actual RECIPES_DIR.
+    RECIPES_DIR = Path(
+        "./recipes"
+    )  # Added a placeholder for RECIPES_DIR to make the code syntactically correct.
+    # The user should replace this with their actual RECIPES_DIR.
 
     path = RECIPES_DIR / f"{name}.json"
     if not path.exists():
         raise FileNotFoundError(f"Recipe '{name}' not found at {path}")
 
-    data: Dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+    data: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
 
     if "name" not in data or "version" not in data:
         raise ValueError("Invalid recipe: missing name or version")

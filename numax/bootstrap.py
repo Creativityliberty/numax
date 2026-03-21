@@ -4,15 +4,17 @@ import os
 
 from numax.models.catalog import ModelCatalog, ModelSpec
 from numax.models.resolver import ModelResolver, RuntimePolicy
-from numax.providers.google import GoogleProvider
 from numax.providers.mock import MockProvider
 from numax.providers.registry import ProviderRegistry
 
 
 def build_provider_registry() -> ProviderRegistry:
+    from numax.providers.auto_detect import build_auto_providers
+
     registry = ProviderRegistry()
     registry.register(MockProvider())
-    registry.register(GoogleProvider())
+    for provider in build_auto_providers():
+        registry.register(provider)
     return registry
 
 

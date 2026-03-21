@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import yaml
 
@@ -25,13 +25,13 @@ def _deep_merge(base: dict[str, Any], extra: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
-def load_config() -> Dict[str, Any]:
+def load_config() -> dict[str, Any]:
     """
     Load NUMAX config from the default config directory.
     Merge order:
     base <- providers <- routing <- budget <- governance
     """
-    config: Dict[str, Any] = {}
+    config: dict[str, Any] = {}
 
     for filename in [
         "base.yaml",
@@ -45,11 +45,11 @@ def load_config() -> Dict[str, Any]:
     return config
 
 
-def get_runtime_autonomy_mode(config: Dict[str, Any]) -> str:
+def get_runtime_autonomy_mode(config: dict[str, Any]) -> str:
     return str(config.get("runtime", {}).get("autonomy_mode", "ASSISTED"))
 
 
-def get_budget_limits(config: Dict[str, Any]) -> Dict[str, Any]:
+def get_budget_limits(config: dict[str, Any]) -> dict[str, Any]:
     budget = config.get("budget", {})
     return {
         "max_tokens_total": budget.get("max_tokens_total", 20000),
@@ -58,9 +58,9 @@ def get_budget_limits(config: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def get_routing_config(config: Dict[str, Any]) -> Dict[str, Any]:
+def get_routing_config(config: dict[str, Any]) -> dict[str, Any]:
     return dict(config.get("models", {}))
 
 
-def get_provider_config(config: Dict[str, Any]) -> Dict[str, Any]:
+def get_provider_config(config: dict[str, Any]) -> dict[str, Any]:
     return dict(config.get("providers", {}))

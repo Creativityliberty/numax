@@ -138,5 +138,35 @@ def config_show() -> None:
     typer.echo(config)
 
 
+@app.command("learning-show")
+def learning_show() -> None:
+    from numax.learning.critic_calibration import load_critic_policy
+    from numax.learning.model_selector import load_model_selector_policy
+    from numax.learning.retrieval_ranker import load_ranker_policy
+    from numax.learning.router import load_router_policy
+
+    typer.echo("=== Router Policy ===")
+    typer.echo(load_router_policy())
+    typer.echo("=== Model Selector Policy ===")
+    typer.echo(load_model_selector_policy())
+    typer.echo("=== Critic Policy ===")
+    typer.echo(load_critic_policy())
+    typer.echo("=== Retrieval Ranker Policy ===")
+    typer.echo(load_ranker_policy())
+
+
+@app.command("feedback-apply")
+def feedback_apply(filepath: str = typer.Option(..., help="Path to JSON feedback file")) -> None:
+    import json
+
+    from numax.learning.policy_feedback import apply_feedback
+
+    with open(filepath, encoding="utf-8") as f:
+        data = json.load(f)
+
+    result = apply_feedback(data)
+    typer.echo(f"Feedback applied: {result}")
+
+
 if __name__ == "__main__":
     app()
