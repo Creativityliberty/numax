@@ -20,6 +20,8 @@ from numax.flows.planning_execution import build_planning_execution_flow
 from numax.flows.retrieval_answer import build_retrieval_answer_flow
 from numax.flows.workspace_analysis import build_workspace_analysis_flow
 from numax.flows.workspace_search import build_workspace_search_flow
+from numax.flows.code_change_loop import build_code_change_loop_flow
+from numax.flows.repo_repair import build_repo_repair_flow
 from numax.health.startup_checks import run_startup_checks
 from numax.identity.runtime_identity import build_runtime_identity
 from numax.learning.critic_calibration import load_critic_policy
@@ -76,6 +78,12 @@ def run(
         start = "workspace_open"
     elif flow == "workspace_search":
         graph = build_workspace_search_flow()
+        start = "workspace_open"
+    elif flow == "code_change_loop":
+        graph = build_code_change_loop_flow()
+        start = "workspace_open"
+    elif flow == "repo_repair":
+        graph = build_repo_repair_flow()
         start = "workspace_open"
     else:
         raise typer.BadParameter(f"Unsupported flow: {flow}")
@@ -323,6 +331,43 @@ def workspace_search(
     final_state = graph.run(start="workspace_open", state=state)
 
     typer.echo(final_state.world_state.get("workspace_search"))
+
+
+@app.command("workspace-repair")
+def workspace_repair(
+    path: str = typer.Option(".", help="Workspace path"),
+    query: str = typer.Option(..., help="Search query"),
+    patch_old_text: str = typer.Option(None, help="Old text to replace"),
+    patch_new_text: str = typer.Option(None, help="New text"),
+    preview_patch: bool = typer.Option(True, help="Preview only"),
+) -> None:
+    state = NumaxState(
+        observation={
+            "workspace_path": path,
+            "search_query": query,
+            "patch_old_text": patch_old_text,
+            "patch_new_text": patch_new_text,
+            "preview_patch": preview_patch,
+        }
+    )
+    state.runtime.run_id = str(uuid.uuid4())
+
+    graph = build_repo_repair_flow()
+    final_state = graph.run(start="workspace_open", state=state)
+
+    typer.echo(
+        {
+            "workspace": final_state.active_workspace,
+            "active_files": final_state.active_files,
+            "last_patch": final_state.last_patch,
+            "last_test_run": final_state.last_test_run,
+            "code_review": final_state.world_state.get("code_review"),
+            "patch_risk": final_state.patch_risk,
+            "change_scope": final_state.change_scope,
+            "last_failure": final_state.last_failure,
+            "next_recommended_action": final_state.next_recommended_action,
+        }
+    )
 
 
 if __name__ == "__main__":

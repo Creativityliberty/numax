@@ -76,6 +76,9 @@ class NumaxState(BaseModel):
     last_test_run: dict[str, Any] = Field(default_factory=dict)
     last_failure: dict[str, Any] = Field(default_factory=dict)
     next_recommended_action: str | None = None
+    code_review: dict[str, Any] = Field(default_factory=dict)
+    patch_risk: str | None = None
+    change_scope: str | None = None
     trace: list[TraceEvent] = Field(default_factory=list)
 
     def add_trace(
