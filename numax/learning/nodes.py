@@ -4,8 +4,8 @@ from typing import Any, Dict
 
 from numax.core.node import NumaxNode
 from numax.core.state import NumaxState
-from numax.learning.mode_feedback import capture_run_feedback
-from numax.learning.mode_selector import SmartModeSelector
+from numax.learning.mode_feedback import capture_run_feedback, load_mode_feedback
+from numax.learning.mode_selector import SmartModeSelector, select_best_mode
 from numax.learning.mode_stats import ModeFeedback, build_mock_history
 
 
@@ -62,8 +62,10 @@ class LearningRecommendNode(NumaxNode):
         }
 
     def exec(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        # In a real scenario, we would load the external history. Here we use mock + state history.
-        history_objs = [ModeFeedback(**h) for h in []] # Placeholder for persistent storage
+        # Connect to real history
+        feedback_payload = load_mode_feedback()
+        history_objs = [ModeFeedback(**r) for r in feedback_payload.get("records", [])]
+        
         selector = SmartModeSelector(history=history_objs + build_mock_history())
         
         recommendation = selector.recommend(

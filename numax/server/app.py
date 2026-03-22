@@ -6,7 +6,9 @@ from numax.server.middleware.auth import SimpleAuthMiddleware
 from numax.server.routes import (
     admin,
     async_models,
+    flows,
     jobs,
+    learning,
     models,
     providers,
     recipes,
@@ -31,6 +33,8 @@ def create_app() -> FastAPI:
     app.include_router(jobs.router, prefix="/jobs", tags=["jobs"])
     app.include_router(admin.router, prefix="/admin", tags=["admin"])
     app.include_router(sandbox.router, prefix="/sandbox", tags=["sandbox"])
+    app.include_router(flows.router, prefix="/flows", tags=["flows"])
+    app.include_router(learning.router, prefix="/learning", tags=["learning"])
 
     @app.get("/health")
     def health() -> dict:

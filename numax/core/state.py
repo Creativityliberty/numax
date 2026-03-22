@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any, Dict, List, Literal
 
 from pydantic import BaseModel, Field
 
@@ -124,6 +124,31 @@ class NumaxState(BaseModel):
     learning_history: list[dict[str, Any]] = Field(default_factory=list)
     mode_feedback: list[dict[str, Any]] = Field(default_factory=list)
     mode_selection_result: dict[str, Any] = Field(default_factory=dict)
+    
+    # V3 Teams state
+    teams_state: Dict[str, Any] = Field(default_factory=dict)
+    team_results: Dict[str, Any] = Field(default_factory=dict)
+    handover_log: List[Dict[str, Any]] = Field(default_factory=list)
+
+    # V3 Blackboard state
+    blackboard_state: Dict[str, Any] = Field(default_factory=lambda: {"entries": []})
+    mission_queue: Dict[str, Any] = Field(default_factory=lambda: {"messages": []})
+    subscription_state: Dict[str, Any] = Field(default_factory=dict)
+
+    # V3 Batch/Parallel state
+    batch_results: List[Dict[str, Any]] = Field(default_factory=list)
+    parallel_results: List[Dict[str, Any]] = Field(default_factory=list)
+    map_reduce_result: Dict[str, Any] = Field(default_factory=dict)
+
+    # V3 Catalog state
+    catalog_items: List[Dict[str, Any]] = Field(default_factory=list)
+    catalog_sync_result: Dict[str, Any] = Field(default_factory=dict)
+    catalog_team_templates: List[Dict[str, Any]] = Field(default_factory=list)
+
+    # V3 Director state
+    director_plan: Dict[str, Any] = Field(default_factory=dict)
+    director_assignments: List[Dict[str, Any]] = Field(default_factory=list)
+    director_results: Dict[str, Any] = Field(default_factory=dict)
 
     trace: list[TraceEvent] = Field(default_factory=list)
 

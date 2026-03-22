@@ -15,12 +15,18 @@ from numax.configs.loader import (
 )
 from numax.core.state import NumaxState
 from numax.flows.artifact_output import build_artifact_output_flow
+from numax.flows.blackboard_cycle import build_blackboard_cycle_flow
+from numax.flows.catalog_sync import build_catalog_sync_flow
 from numax.flows.basic_chat import build_basic_chat_flow
 from numax.flows.planning_execution import build_planning_execution_flow
 from numax.flows.retrieval_answer import build_retrieval_answer_flow
 from numax.flows.workspace_analysis import build_workspace_analysis_flow
 from numax.flows.workspace_search import build_workspace_search_flow
 from numax.flows.code_change_loop import build_code_change_loop_flow
+from numax.flows.director_orchestration import build_director_orchestration_flow
+from numax.flows.team_run import build_team_run_flow
+from numax.flows.team_batch_run import run_team_batch
+from numax.flows.team_map_reduce import run_team_map_reduce
 from numax.flows.repo_repair import build_repo_repair_flow
 from numax.flows.subagent_review import build_subagent_review_flow
 from numax.flows.specification_loop import build_specification_loop_flow
@@ -30,9 +36,12 @@ from numax.flows.runtime_resilience import build_runtime_resilience_flow
 from numax.flows.recipe_run import build_recipe_run_flow
 from numax.flows.external_subagent_run import build_external_subagent_run_flow
 from numax.flows.learning_feedback import build_learning_feedback_flow
+from numax.teams.blackboard import BlackboardState, list_blackboard_entries
+from numax.catalog.registry import build_catalog_registry
 from numax.learning.mode_feedback import load_mode_feedback
 from numax.learning.mode_stats import compute_mode_stats
 from numax.learning.mode_selector import select_best_mode
+from numax.teams.registry import build_default_team_registry
 from numax.jobs.retry_scheduler import schedule_retry
 from numax.packs.install import install_pack
 from numax.packs.registry import build_default_pack_registry
@@ -49,6 +58,11 @@ from numax.session.diagnostics import build_session_diagnostics
 from numax.tools.default_tools import build_default_tool_registry
 
 app = typer.Typer()
+
+
+@app.command("hello")
+def hello_cmd() -> None:
+    print("NUMAX CLI IS ALIVE")
 
 
 @app.command()
@@ -78,6 +92,15 @@ def run(
     if flow == "basic_chat":
         graph = build_basic_chat_flow()
         start = "intent_router"
+    elif flow == "blackboard_cycle":
+        graph = build_blackboard_cycle_flow()
+        start = "blackboard_publish"
+    elif flow == "catalog_sync":
+        graph = build_catalog_sync_flow()
+        start = "catalog_sync"
+    elif flow == "director_orchestration":
+        graph = build_director_orchestration_flow()
+        start = "director_plan"
     elif flow == "retrieval_answer":
         graph = build_retrieval_answer_flow()
         start = "intent_router"
@@ -99,6 +122,9 @@ def run(
     elif flow == "repo_repair":
         graph = build_repo_repair_flow()
         start = "workspace_open"
+    elif flow == "team_run":
+        graph = build_team_run_flow()
+        start = "team_load"
     elif flow == "subagent_review":
         graph = build_subagent_review_flow()
         start = "subagent_orchestrate"
@@ -722,6 +748,170 @@ def pack_install(pack_id: str = typer.Option(...)) -> None:
 @app.command("retry-schedule")
 def retry_schedule(job_id: str = typer.Option("job-1"), retries: int = typer.Option(0)) -> None:
     typer.echo(schedule_retry(job_id=job_id, retries=retries))
+
+
+@app.command("teams-list")
+def teams_list() -> None:
+    registry = build_default_team_registry()
+    for team_id in registry.list_ids():
+        team = registry.get(team_id)
+        typer.echo(f"{team.team_id} - {team.name} -> flow={team.default_flow}")
+
+
+@app.command("team-run")
+def team_run_cmd(
+    team_id: str = typer.Option("product_squad", help="Team identifier"),
+    prompt: str = typer.Option("Prepare a mission", help="Mission objective"),
+) -> None:
+    state = NumaxState(
+        observation={
+            "team_id": team_id,
+            "raw_input": prompt,
+        }
+    )
+    state.runtime.run_id = str(uuid.uuid4())
+
+    graph = build_team_run_flow()
+    final_state = graph.run(start="team_load", state=state)
+
+    typer.echo(
+        {
+            "teams_state": final_state.teams_state,
+            "team_results": final_state.team_results,
+            "next_recommended_action": final_state.next_recommended_action,
+        }
+    )
+
+
+@app.command("team-handover-check")
+def team_handover_check(
+    from_team: str = typer.Option("product_squad"),
+    to_team: str = typer.Option("engineering_squad"),
+    artifact_type: str = typer.Option("spec"),
+    objective: str = typer.Option("Build the implementation"),
+) -> None:
+    from numax.teams.handover import validate_handover
+
+    payload = {"objective": objective}
+    result = validate_handover(
+        from_team=from_team,
+        to_team=to_team,
+        artifact_type=artifact_type,
+        payload=payload,
+    )
+    typer.echo(result.model_dump())
+
+
+@app.command("blackboard-publish")
+def blackboard_publish_cmd(
+    team_id: str = typer.Option("product_squad"),
+    artifact_type: str = typer.Option("spec"),
+    objective: str = typer.Option("Build the implementation"),
+    consume_team_id: str = typer.Option("engineering_squad"),
+) -> None:
+    state = NumaxState(
+        observation={
+            "team_id": team_id,
+            "artifact_type": artifact_type,
+            "artifact_payload": {"objective": objective},
+            "consume_team_id": consume_team_id,
+        }
+    )
+    state.runtime.run_id = str(uuid.uuid4())
+
+    graph = build_blackboard_cycle_flow()
+    final_state = graph.run(start="blackboard_publish", state=state)
+
+    typer.echo(
+        {
+            "blackboard_state": final_state.blackboard_state,
+            "mission_queue": final_state.mission_queue,
+            "subscription_state": final_state.subscription_state,
+            "next_recommended_action": final_state.next_recommended_action,
+        }
+    )
+
+
+@app.command("blackboard-show")
+def blackboard_show(
+    artifact_type: str = typer.Option(None),
+) -> None:
+    state = BlackboardState(entries=[])
+    typer.echo(list_blackboard_entries(state, artifact_type=artifact_type))
+
+
+@app.command("team-batch-run")
+def team_batch_run_cmd() -> None:
+    base_state = NumaxState()
+
+    batch_inputs = [
+        {"team_id": "product_squad", "raw_input": "Prepare product spec"},
+        {"team_id": "engineering_squad", "raw_input": "Implement repo patch"},
+        {"team_id": "qa_squad", "raw_input": "Review patch quality"},
+    ]
+
+    results = run_team_batch(base_state=base_state, batch_inputs=batch_inputs)
+    typer.echo(results)
+
+
+@app.command("team-map-reduce")
+def team_map_reduce_cmd() -> None:
+    base_state = NumaxState()
+
+    missions = [
+        {"team_id": "product_squad", "raw_input": "Define V3 mission"},
+        {"team_id": "engineering_squad", "raw_input": "Implement V3 module"},
+        {"team_id": "qa_squad", "raw_input": "Audit V3 output"},
+    ]
+
+    result = run_team_map_reduce(base_state=base_state, missions=missions)
+    typer.echo(result)
+
+
+@app.command("catalog-sync")
+def catalog_sync_cmd() -> None:
+    state = NumaxState()
+    state.runtime.run_id = str(uuid.uuid4())
+
+    graph = build_catalog_sync_flow()
+    final_state = graph.run(start="catalog_sync", state=state)
+
+    typer.echo(
+        {
+            "catalog_sync_result": final_state.catalog_sync_result,
+            "catalog_team_templates": final_state.catalog_team_templates,
+            "next_recommended_action": final_state.next_recommended_action,
+        }
+    )
+
+
+@app.command("catalog-show")
+def catalog_show() -> None:
+    typer.echo(build_catalog_registry())
+
+
+@app.command("director-run")
+def director_run_cmd(
+    prompt: str = typer.Option("Build NUMAX V3 multi-team architecture", help="Global objective"),
+) -> None:
+    state = NumaxState(
+        observation={
+            "raw_input": prompt,
+        }
+    )
+    state.runtime.run_id = str(uuid.uuid4())
+
+    graph = build_director_orchestration_flow()
+    final_state = graph.run(start="director_plan", state=state)
+
+    typer.echo(
+        {
+            "director_plan": final_state.director_plan,
+            "director_assignments": final_state.director_assignments,
+            "director_results": final_state.director_results,
+            "next_recommended_action": final_state.next_recommended_action,
+        }
+    )
 
 
 if __name__ == "__main__":

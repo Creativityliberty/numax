@@ -5,6 +5,52 @@ from typing import Any, Dict, List
 from numax.learning.mode_feedback import load_mode_feedback
 
 
+from dataclasses import dataclass, field
+
+@dataclass
+class ModeFeedback:
+    run_id: str
+    target_id: str
+    target_type: str
+    success: bool = True
+    rollback: bool = False
+    duration_seconds: float = 0.0
+    cost_used_usd: float = 0.0
+    retries: int = 0
+    quality_score: float = 0.0
+    metrics: Dict[str, Any] = field(default_factory=dict)
+
+    def model_dump(self) -> Dict[str, Any]:
+        return {
+            "run_id": self.run_id,
+            "target_id": self.target_id,
+            "target_type": self.target_type,
+            "success": self.success,
+            "rollback": self.rollback,
+            "duration_seconds": self.duration_seconds,
+            "cost_used_usd": self.cost_used_usd,
+            "retries": self.retries,
+            "quality_score": self.quality_score,
+            "metrics": self.metrics,
+        }
+
+
+class ModeStatsAggregator:
+    def __init__(self, history: List[ModeFeedback]) -> None:
+        self.history = history
+
+    def get_all_summaries(self) -> Dict[str, Any]:
+        return compute_mode_stats()
+
+
+def build_mock_history() -> List[ModeFeedback]:
+    return [
+        ModeFeedback(run_id="m11", target_id="repo_operator", target_type="profile", success=True, quality_score=0.9),
+        ModeFeedback(run_id="m12", target_id="research_mode", target_type="profile", success=True, quality_score=0.8),
+        ModeFeedback(run_id="m13", target_id="workspace_audit", target_type="recipe", success=True, quality_score=0.95),
+    ]
+
+
 def _safe_avg(values: list[float]) -> float:
     if not values:
         return 0.0

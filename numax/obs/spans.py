@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Dict
 from numax.obs.span_bridge import export_span_record
 
-SPAN_LOG_PATH = Path("data/traces/spans.jsonl")
+SPAN_LOG_PATH = Path("/Volumes/Numtema/numax/data/traces/spans.jsonl")
 SPAN_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 

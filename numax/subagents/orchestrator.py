@@ -8,6 +8,7 @@ from numax.subagents.contracts import ExternalSubagentRequest
 from numax.subagents.external import build_default_external_subagent_registry
 from numax.subagents.operator import OperatorSubagent
 from numax.subagents.reviewer import ReviewerSubagent
+from numax.learning.mode_selector import select_best_mode
 
 
 class SubagentOrchestrator:
@@ -16,6 +17,9 @@ class SubagentOrchestrator:
         self.coder = CoderSubagent()
         self.reviewer = ReviewerSubagent()
         self.external_registry = build_default_external_subagent_registry()
+
+    def recommend_best_config(self, group_by: str = "profile") -> Dict[str, Any]:
+        return select_best_mode(group_by=group_by, min_runs=1)
 
     def run_all(self, state: NumaxState) -> Dict[str, Any]:
         operator_result = self.operator.act(state)
