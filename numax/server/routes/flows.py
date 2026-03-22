@@ -20,6 +20,18 @@ def get_flow_builder(name: str):
         elif name == "learning_feedback":
             from numax.flows.learning_feedback import build_learning_feedback_flow
             return build_learning_feedback_flow, "learning_feedback"
+        elif name == "team_run":
+            from numax.flows.team_run import build_team_run_flow
+            return build_team_run_flow, "team_load"
+        elif name == "blackboard_cycle":
+            from numax.flows.blackboard_cycle import build_blackboard_cycle_flow
+            return build_blackboard_cycle_flow, "blackboard_publish"
+        elif name == "catalog_sync":
+            from numax.flows.catalog_sync import build_catalog_sync_flow
+            return build_catalog_sync_flow, "catalog_sync"
+        elif name == "director_orchestration":
+            from numax.flows.director_orchestration import build_director_orchestration_flow
+            return build_director_orchestration_flow, "director_plan"
         # Add more mappings as needed
         raise ValueError(f"Unknown flow: {name}")
     except ImportError as e:
